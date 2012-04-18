@@ -42,19 +42,18 @@ add_shortcode('ngp_show_form','ngp_show_form');
 
 function ngp_admin_init() {
 	// add_action('admin_menu', 'ngp_plugin_menu');
-	add_settings_field(
-		'ngp_api_key',
-		'NGP API Key',
-		'ngp_api_key_field',
-		'general',
-		'ngp_donations',
-		array('label_for' => 'ngp_api_key')
-	);
 	register_setting('general', 'ngp_api_key', 'esc_attr');
 	add_settings_field(
 		'ngp_api_key',
 		'<label for="ngp_api_key">'.__('NGP API Key' , 'ngp_api_key' ).'</label>',
 		'ngp_api_key_field',
+		'general'
+	);
+	register_setting('general', 'ngp_thanks_url', 'esc_attr');
+	add_settings_field(
+		'ngp_thanks_url',
+		'<label for="ngp_api_key">'.__('"Thanks for Contributing" URL' , 'ngp_thanks_url' ).'<br /> (e.g. "/thank-you")</label>',
+		'ngp_thanks_url_field',
 		'general'
 	);
 	register_setting('general', 'ngp_support_phone', 'esc_attr');
@@ -81,6 +80,11 @@ function ngp_api_key_field() {
 }
 
 function ngp_support_phone() {
+	$value = get_option('ngp_thanks_url', '');
+	echo '<input type="text" style="width:300px;" id="ngp_thanks_url" name="ngp_thanks_url" value="' . $value . '" />';
+}
+
+function ngp_thanks_url_field() {
 	$value = get_option('ngp_support_phone', '');
 	echo '<input type="text" style="width:150px;" id="ngp_support_phone" name="ngp_support_phone" value="' . $value . '" />';
 }

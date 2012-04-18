@@ -22,7 +22,7 @@ function ngp_show_form( $atts, $form=true ) {
 	
 	// To be pulled from DB later.
 	// $redirect_url = $res[0]->redirect_url;
-	$redirect_url = '/thank-you-for-your-contribution';
+	$redirect_url = get_option('ngp_thanks_url', '/thank-you-for-your-contribution');
 	
 	$fieldsets = array(
 		'Contributor' => array(
@@ -155,7 +155,7 @@ function ngp_show_form( $atts, $form=true ) {
 	
 	// if(count($res) == 1) {
 	$any_errors = false;
-	if(wp_verify_nonce($_POST['ngp_add'], 'ngp_nonce_field') && $_POST['ngp_form_id']==$id)
+	if(wp_verify_nonce($_POST['ngp_add'], 'ngp_nonce_field')) // && $_POST['ngp_form_id']==$id
 	{
 		foreach($fieldsets as $fieldset) {
 			foreach($fieldset as $key => $field) {
@@ -449,7 +449,7 @@ function ngp_show_form( $atts, $form=true ) {
 	?>
 	<form <?php if($file) { echo 'enctype="multipart/form-data" '; } ?>name="ngp_user_news" class="ngp_user_submission" id="ngp_form" action="<?php echo $_SERVER['REQUEST_URI']; ?>" method="post">
 		<?php
-		echo '<input type="hidden" name="ngp_form_id" id="ngp_form_id" value="'.$id.'" />';
+		// echo '<input type="hidden" name="ngp_form_id" id="ngp_form_id" value="'.$id.'" />';
 			
 		if(function_exists('wp_nonce_field')) {
 			wp_nonce_field('ngp_nonce_field', 'ngp_add');

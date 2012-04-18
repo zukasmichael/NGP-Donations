@@ -259,43 +259,43 @@ class NgpDonation {
                 $this->errors[] = "$field is required";
             }
         }
-
-        //Check recurring period
-        if ( !empty($this->allFields['RecurringPeriod']) && !in_array($this->allFields['RecurringPeriod'], array('MONT', 'WEEK', 'BIWK', 'FRWK', 'QTER', 'SMYR', 'YEAR')) ) {
-            $this->errors[] = 'Invalid recurring period. Must be one of: MONT, WEEK, BIWK, FRWK, QTER, SMYR, YEAR.';
-        }
-
-        //Check recurring term
-        if ( !empty($this->allFields['RecurringTerm']) ) {
-            $rt = (int)$this->allFields['RecurringTerm'];
-            if ( $rt < 1 || $rt > 24 ) {
-                $this->errors[] = 'Invalid recurring term. Must be a number 1-24.';
-            }
-        }
-
-        //Check ExpMonth format
-        if ( !empty($this->allFields['ExpMonth']) ) {
-            $m = $this->allFields['ExpMonth'];
-            if ( !preg_match('#^(0[1-9]|1[012])$#', $m) ) {
-                $this->errors[] = 'Invalid Expiration Month. Must be a two-digit number 01-12.';
-            }
-        }
-
-        //Check ExpYear format
-        if ( !empty($this->allFields['ExpYear']) ) {
-            $y = $this->allFields['ExpYear'];
-            if ( !preg_match('#^\d{2}$#', $y) ) {
-                $this->errors[] = 'Invalid Expiration Year. Must be a two-digit number 00-99.';
-            }
-        }
-
-        //Check donation cycle
-        if ( !empty($this->allFields['Cycle']) ) {
-            $c = $this->allFields['Cycle'];
-            if ( !preg_match('#^(19|20)\d\d$#', $c) ) {
-                $this->errors[] = 'Invalid cycle. Must be four-digit year.';
-            }
-        }
+		
+		//Check recurring period
+		if ( !empty($this->allFields['RecurringPeriod']) && !in_array($this->allFields['RecurringPeriod'], array('MONT', 'WEEK', 'BIWK', 'FRWK', 'QTER', 'SMYR', 'YEAR')) ) {
+			$this->errors[] = 'Invalid recurring period. Must be one of: MONT, WEEK, BIWK, FRWK, QTER, SMYR, YEAR.';
+		}
+		
+		//Check recurring term
+		if ( !empty($this->allFields['RecurringTerm']) ) {
+			$rt = (int)$this->allFields['RecurringTerm'];
+			if ( $rt < 1 || $rt > 24 ) {
+				$this->errors[] = 'Invalid recurring term. Must be a number 1-24.';
+			}
+		}
+		
+		//Check ExpMonth format
+		if ( !empty($this->allFields['ExpMonth']) ) {
+			$m = $this->allFields['ExpMonth'];
+			if ( !preg_match('#^(0[1-9]|1[012])$#', $m) ) {
+				$this->errors[] = 'Invalid Expiration Month. Must be a two-digit number 01-12.';
+			}
+		}
+		
+		//Check ExpYear format
+		if ( !empty($this->allFields['ExpYear']) ) {
+			$y = $this->allFields['ExpYear'];
+			if ( !preg_match('#^\d{2}$#', $y) ) {
+				$this->errors[] = 'Invalid Expiration Year. Must be a two-digit number 00-99.';
+			}
+		}
+		
+		//Check donation cycle
+		if ( !empty($this->allFields['Cycle']) ) {
+			$c = $this->allFields['Cycle'];
+			if ( !preg_match('#^(19|20)\d\d$#', $c) ) {
+				$this->errors[] = 'Invalid cycle. Must be four-digit year.';
+			}
+		}
 
         //Check donation amount
         if ( isset($this->allFields['Amount']) ) {
