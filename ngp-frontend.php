@@ -5,6 +5,13 @@
  */
 function ngp_show_form( $atts, $form=true ) {
 	global $wpdb, $ngp;
+    
+	$url_parts = explode('.', $_SERVER["SERVER_NAME"]);
+	if($_SERVER["HTTPS"] != "on" && $url_parts[count($url_parts)-1]!=='dev') {
+        $newurl = "https://" . $_SERVER["SERVER_NAME"] . $_SERVER["REQUEST_URI"];
+        header("Location: $newurl");
+        exit();
+    }
 	
 	$api_key = get_option('ngp_api_key', '');
 	
