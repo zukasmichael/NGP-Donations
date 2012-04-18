@@ -12,6 +12,12 @@ Go to `Settings -> General` and fill out the "NGP API Key", "Donation Support Ph
 
 "Addt'l Information for Donation Footer" might be used for listing things like donation mailing address, donation limits, taxable status of donations, etc.
 
-## Alert!
+### Usage
+
+Place this short tag on the appropriate page or article:
+
+	[ngp_show_form]
+
+### Alert!
 
 You should be running your site under an SSL certificate if you utilize this plugin.
