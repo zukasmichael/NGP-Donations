@@ -158,11 +158,7 @@ function ngp_show_form( $atts, $form=true ) {
 				'show_label' => 'false',
 				'show_placeholder' => 'false',
 				'show_pre_div' => 'false',
-				'options' => array(
-					'12' => '2012',
-					'13' => '2013',
-					'14' => '2014'
-				)
+				'options' => array()
 			),
 		)
 		// array(
@@ -174,6 +170,14 @@ function ngp_show_form( $atts, $form=true ) {
 		// 	'show_placeholder' => 'false'
 		// )
 	);
+	
+	$y = (int)date('Y');
+	$y_short = (int)date('y');
+	while($y < (int)date('Y', strtotime('+19 years'))) {
+		$fieldsets['Credit card'][3]['options'][$y_short] = $y;
+		$y+=1;
+		$y_short+=1;
+	}
 	
 	// Get the Form from the DB
 	// TODO: Later, let's make the forms configurable
