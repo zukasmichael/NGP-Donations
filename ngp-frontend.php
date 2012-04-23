@@ -5,13 +5,23 @@
  */
 function ngp_show_form( $atts, $form=true ) {
 	global $wpdb, $ngp;
-    
-	$url_parts = explode('.', $_SERVER["SERVER_NAME"]);
+	
+	$url_specified = get_option('ngp_secure_url', '');
+	$server_url_parts = explode('.', $_SERVER["SERVER_NAME"]);
+	if(!empty($url_specified) && $server_url_parts[count($server_url_parts)-1]!=='dev') {
+		$url_parts = $url_specified;
+	} else {
+		$url_parts = $server_url_parts;
+	}
 	if($_SERVER["HTTPS"] != "on" && $url_parts[count($url_parts)-1]!=='dev') {
-        $newurl = "https://" . $_SERVER["SERVER_NAME"] . $_SERVER["REQUEST_URI"];
-        header("Location: $newurl");
-        exit();
-    }
+		if(!empty($url_specified)) {
+			$newurl = "https://" . $url_specified . $_SERVER["REQUEST_URI"];
+		} else {
+			$newurl = "https://" . $_SERVER["SERVER_NAME"] . $_SERVER["REQUEST_URI"];
+		}
+		header("Location: $newurl");
+		exit();
+	}
 	
 	$api_key = get_option('ngp_api_key', '');
 	

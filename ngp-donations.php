@@ -56,6 +56,13 @@ function ngp_admin_init() {
 		'ngp_thanks_url_field',
 		'general'
 	);
+	register_setting('general', 'ngp_secure_url', 'esc_attr');
+	add_settings_field(
+		'ngp_secure_url',
+		'<label for="ngp_secure_url">'.__('Secure URL (No https://)' , 'ngp_secure_url' ).'</label>',
+		'ngp_secure_url',
+		'general'
+	);
 	register_setting('general', 'ngp_support_phone', 'esc_attr');
 	add_settings_field(
 		'ngp_support_phone',
@@ -79,14 +86,19 @@ function ngp_api_key_field() {
 	echo '<input type="text" style="width:300px;" id="ngp_api_key" name="ngp_api_key" value="' . $value . '" />';
 }
 
-function ngp_support_phone() {
+function ngp_thanks_url_field() {
 	$value = get_option('ngp_thanks_url', '');
 	echo '<input type="text" style="width:300px;" id="ngp_thanks_url" name="ngp_thanks_url" value="' . $value . '" />';
 }
 
-function ngp_thanks_url_field() {
+function ngp_support_phone() {
 	$value = get_option('ngp_support_phone', '');
 	echo '<input type="text" style="width:150px;" id="ngp_support_phone" name="ngp_support_phone" value="' . $value . '" />';
+}
+
+function ngp_secure_url() {
+	$value = get_option('ngp_secure_url', '');
+	echo '<input type="text" style="width:150px;" id="ngp_secure_url" name="ngp_secure_url" value="' . $value . '" />';
 }
 
 function ngp_footer_info() {
