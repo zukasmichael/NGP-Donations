@@ -32,12 +32,12 @@ function ngp_show_form( $atts, $form=true ) {
 	$redirect_url = get_option('ngp_thanks_url', '/thank-you-for-your-contribution');
 	
 	$fieldsets = array(
-		'Contributor' => array(
+		'Personal Information' => array(
 			array(
 				'type' => 'text',
 				'slug' => 'FullName',
 				'required' => 'true',
-				'label' => 'Name'
+				'label' => 'Name',
 			),
 			array(
 				'type' => 'text',
@@ -118,22 +118,41 @@ function ngp_show_form( $atts, $form=true ) {
 				'label' => 'Credit Card Number'
 			),
 			array(
-				'type' => 'text',
+				'type' => 'select',
 				'slug' => 'ExpMonth',
 				'required' => 'true',
-				'label' => 'Expiration Month/Year (MM/YY)',
+				'label' => 'Expiration Date',
 				'show_label' => 'true',
-				'show_placeholder' => 'false',
-				'show_post_div' => 'false'
+				'show_pre_div' => 'true',
+				'show_post_div' => 'false',
+				'options' => array(
+					'01' => '1 - January',
+					'02' => '2 - February',
+					'03' => '3 - March',
+					'04' => '4 - April',
+					'05' => '5 - May',
+					'06' => '6 - June',
+					'07' => '7 - July',
+					'08' => '8 - August',
+					'09' => '9 - September',
+					'10' => '10 - October',
+					'11' => '11 - November',
+					'12' => '12 - December'					
+				)
 			),
 			array(
-				'type' => 'text',
+				'type' => 'select',
 				'slug' => 'ExpYear',
 				'required' => 'true',
 				'label' => 'Expiration Year',
 				'show_label' => 'false',
 				'show_placeholder' => 'false',
-				'show_pre_div' => 'false'
+				'show_pre_div' => 'false',
+				'options' => array(
+					'12' => '2012',
+					'13' => '2013',
+					'14' => '2014'
+				)
 			),
 		)
 		// array(
@@ -392,36 +411,40 @@ function ngp_show_form( $atts, $form=true ) {
 					$form_fields .= '</fieldset>';
 					break;
 				case 'select':
-					$form_fields .= '
-					<div class="select';
+					if(!isset($field['show_pre_div']) || $field['show_pre_div']=='true') {
+						$form_fields .= '
+							<div class="input';
 						if(isset($field['error']) && $field['error']===true) {
 							$form_fields .= ' error';
 						}
 						$form_fields .= '">';
-						if(isset($field['error']) && $field['error']===true) {
-							$form_fields .= '<div class="errMsg">You must select an option.</div>';
-						}
+					}
+					if(isset($field['error']) && $field['error']===true) {
+						$form_fields .= '<div class="errMsg">You must select an option.</div>';
+					}
+					if(!isset($field['show_label']) || $field['show_label']!='false') {
 						$form_fields .= '
 								<label for="'.$field['slug'].'">'.$field['label'];
 						if($field['required']=='true') { $form_fields .= ' <span class="required">*</span>'; }
-						$form_fields .= '</label>
-						<select name="'.$field['slug'].'" id="'.$field['slug'].'">'."\r\n";
-						if($field['slug']!='State') {
-							$form_fields .= '
-							<option>Select an option...</option>
-							';
-						}
-						foreach($field['options'] as $key => $val) {
-							$form_fields .= '<option value="'.$key.'"';
-							if(isset($default_state) && $default_state==$key) {
-								$form_fields .= ' selected="selected"';
-							}
-							$form_fields .= '>'.$val.'</option>'."\r\n";
-						}
+						$form_fields .= '</label>';
+					}
+					$form_fields .= '<select name="'.$field['slug'].'" id="'.$field['slug'].'">'."\r\n";
+					if($field['slug']!='State' && $field['slug']!='ExpYear' && $field['slug']!='ExpMonth') {
 						$form_fields .= '
-						</select>
-					</div>
-					';
+						<option>Select an option...</option>
+						';
+					}
+					foreach($field['options'] as $key => $val) {
+						$form_fields .= '<option value="'.$key.'"';
+						if(isset($default_state) && $default_state==$key) {
+							$form_fields .= ' selected="selected"';
+						}
+						$form_fields .= '>'.$val.'</option>'."\r\n";
+					}
+					$form_fields .= '</select>';
+					if(!isset($field['show_post_div']) || $field['show_post_div']=='true') {
+						$form_fields .= '</div>';
+					}
 					break;
 				case 'multiselect':
 					$form_fields .= '
