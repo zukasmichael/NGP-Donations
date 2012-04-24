@@ -62,15 +62,15 @@ function ngp_save_api_info($data) {
 }
 
 function ngp_admin_index() {
-	global $wpdb, $psc;
+	// global $wpdb, $psc;
 	
-	$forms = $wpdb->get_results('SELECT id, name, slug, thanks_url, captcha, default_category, default_status FROM '.$psc->forms);
+	// $forms = $wpdb->get_results('SELECT id, name, slug, thanks_url, captcha, default_category, default_status FROM '.$psc->forms);
 	
 	echo ngp_admin_index_header();
 	
 	echo '<tbody id="the-list">';
 	foreach($forms as $form) {
-		$default_category = $wpdb->get_results('SELECT term_id, name FROM '.$wpdb->prefix.'terms WHERE term_id="'.$form->default_category.'"');
+		// $default_category = $wpdb->get_results('SELECT term_id, name FROM '.$wpdb->prefix.'terms WHERE term_id="'.$form->default_category.'"');
 		echo '<tr id="post-'.$form->id.'" class="alternate author-self status-publish format-default" valign="top">
 				<td class="post-title page-title column-title">
 					<strong>
@@ -189,12 +189,12 @@ function ngp_save_form($data) {
 	// var_dump('SET data=\''.mysql_escape_string(serialize($fields)).'\', name="'.mysql_escape_string($data['title']).'", slug="'.mysql_escape_string($data['slug']).'", thanks_url="'.mysql_escape_string($data['thanks_url']).'", default_status="'.mysql_escape_string($data['default_status']).'", default_category="'.mysql_escape_string($data['default_category']).'", captcha="'.mysql_escape_string($data['captcha']).'"');
 	
 	if(isset($data['ngp_id'])) {
-		$wpdb->query('UPDATE '.$psc->forms.' SET data=\''.serialize($fields).'\', name="'.$data['title'].'", slug="'.$data['slug'].'", thanks_url="'.$data['thanks_url'].'", default_status="'.$data['default_status'].'", default_category="'.$data['default_category'].'", captcha="'.$data['captcha'].'" WHERE id="'.$data['ngp_id'].'"');
+		// $wpdb->query('UPDATE '.$psc->forms.' SET data=\''.serialize($fields).'\', name="'.$data['title'].'", slug="'.$data['slug'].'", thanks_url="'.$data['thanks_url'].'", default_status="'.$data['default_status'].'", default_category="'.$data['default_category'].'", captcha="'.$data['captcha'].'" WHERE id="'.$data['ngp_id'].'"');
 		return true;
 	} else {
-		$insert_array = array('data' => serialize($fields), 'name' => $data['title'], 'slug' => $data['slug'], 'thanks_url' => $data['thanks_url'], 'default_status' => $data['default_status'], 'default_category' => $data['default_category'], 'captcha' => $data['catpcha']);
-		$wpdb->insert($psc->forms, $insert_array);
-		return $wpdb->insert_id;
+		// $insert_array = array('data' => serialize($fields), 'name' => $data['title'], 'slug' => $data['slug'], 'thanks_url' => $data['thanks_url'], 'default_status' => $data['default_status'], 'default_category' => $data['default_category'], 'captcha' => $data['catpcha']);
+		// $wpdb->insert($psc->forms, $insert_array);
+		// return $wpdb->insert_id;
 	}
 }
 
@@ -209,10 +209,11 @@ function ngp_edit_form($form_id=null) {
 	global $wpdb, $psc;
 	
 	if($form_id) {
-		$form = $wpdb->get_results('SELECT * FROM '.$psc->forms.' WHERE id="'.$form_id.'"');
+		// $form = $wpdb->get_results('SELECT * FROM '.$psc->forms.' WHERE id="'.$form_id.'"');
 	}
 	
-	$categories = $wpdb->get_results('SELECT * FROM '.$wpdb->prefix.'terms');
+	// $categories = $wpdb->get_results('SELECT * FROM '.$wpdb->prefix.'terms');
+	$categories = array();
 	$stati = array('pending', 'draft', 'published');
 	$field_types = array('text', 'textarea', 'hidden', 'select', 'multiselect', 'radio', 'checkbox', 'file');
 	

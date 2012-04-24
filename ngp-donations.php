@@ -20,8 +20,8 @@
 
 $GLOBALS['ngp'] = (object) array(
 	// 'forms' => $GLOBALS['wpdb']->prefix . 'ngp_forms',
-	// 'database_version' => '1.0',
-	'version' => '1.0'
+	// 'database_version' => '0.1',
+	'version' => '0.1'
 );
 
 include_once(dirname(__FILE__).'/NgpDonation.php');
@@ -38,7 +38,11 @@ if (!function_exists('add_action')){
 }
 
 add_action('admin_init', 'ngp_admin_init');
-add_shortcode('ngp_show_form','ngp_show_form');
+add_shortcode('ngp_show_form', 'ngp_show_form');
+
+if(isset($_POST['ngp_add'])) {
+	add_action('wp', 'ngp_process_form');
+}
 
 function ngp_admin_init() {
 	// add_action('admin_menu', 'ngp_plugin_menu');

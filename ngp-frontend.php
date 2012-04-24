@@ -1,12 +1,156 @@
 <?php
 
-/**
- * Shows form used to submit story
- */
-function ngp_show_form( $atts, $form=true ) {
-	global $wpdb, $ngp;
+$api_key = get_option('ngp_api_key', '');
+$ngp_error = false;
+$url_specified = get_option('ngp_secure_url', '');
+$any_errors = false;
+$been_processed = false;
+
+$redirect_url = get_option('ngp_thanks_url', '/thank-you-for-your-contribution');
 	
-	$url_specified = get_option('ngp_secure_url', '');
+$fieldsets = array(
+	'Personal Information' => array(
+		array(
+			'type' => 'text',
+			'slug' => 'FullName',
+			'required' => 'true',
+			'label' => 'Name',
+		),
+		array(
+			'type' => 'text',
+			'slug' => 'Email',
+			'required' => 'false',
+			'label' => 'Email Address'
+		),
+		array(
+			'type' => 'text',
+			'slug' => 'Address1',
+			'required' => 'true',
+			'label' => 'Street Address'
+		),
+		// array(
+		// 	'type' => 'text',
+		// 	'slug' => 'Address2',
+		// 	'required' => 'false',
+		// 	'label' => 'Address (Cont.)'
+		// 	'show_label' => 'false'
+		// ),
+		// array(
+		// 	'type' => 'text',
+		// 	'slug' => 'City',
+		// 	'required' => 'true',
+		// 	'label' => 'City'
+		// ),
+		// array(
+		// 	'type' => 'text',
+		// 	'slug' => 'State',
+		// 	'required' => 'true',
+		// 	'label' => 'State'
+		// 	'options' => array('AK'=>'AK','AL'=>'AL','AR'=>'AR','AZ'=>'AZ','CA'=>'CA','CO'=>'CO','CT'=>'CT','DC'=>'DC','DE'=>'DE','FL'=>'FL','GA'=>'GA','HI'=>'HI','IA'=>'IA','ID'=>'ID','IL'=>'IL','IN'=>'IN','KS'=>'KS','KY'=>'KY','LA'=>'LA','MA'=>'MA','MD'=>'MD','ME'=>'ME','MI'=>'MI','MN'=>'MN','MO'=>'MO','MS'=>'MS','MT'=>'MT','NC'=>'NC','ND'=>'ND','NE'=>'NE','NH'=>'NH','NJ'=>'NJ','NM'=>'NM','NV'=>'NV','NY'=>'NY','OH'=>'OH','OK'=>'OK','OR'=>'OR','PA'=>'PA','RI'=>'RI','SC'=>'SC','SD'=>'SD','TN'=>'TN','TX'=>'TX','UT'=>'UT','VA'=>'VA','VT'=>'VT','WA'=>'WA','WI'=>'WI','WV'=>'WV','WY'=>'WY')
+		// ),
+		array(
+			'type' => 'text',
+			'slug' => 'Zip',
+			'required' => 'true',
+			'label' => 'Zip Code'
+		)
+	),
+	'Employment' => array(
+		'html_intro' => '<p>Federal law requires us to use our best efforts to collect and report the name, mailing address, occupation, and employer of individuals whose contributions exceed $200 in an election cycle.</p>',
+		array(
+			'type' => 'text',
+			'slug' => 'Employer',
+			'required' => 'true',
+			'label' => 'Employer'
+		),
+		array(
+			'type' => 'text',
+			'slug' => 'Occupation',
+			'required' => 'true',
+			'label' => 'Occupation (if none, put "n/a" or "self-employed")'
+		)
+	),
+	'Credit card' => array(
+		'html_intro' => '<p id="accepted-cards" style="margin: 0pt 0pt -5px; background: url(/wp-content/plugins/'.plugin_basename(dirname(__FILE__)).'/credit-card-logos.png) no-repeat scroll 0% 0% transparent; text-indent: -900em; width: 211px; height: 34px;">We accept Visa, Mastercard, American Express and Discover cards.</p>',
+		array(
+			'type' => 'radio',
+			'slug' => 'Amount',
+			'required' => 'true',
+			'label' => 'Amount',
+			'options' => array(
+				'10.00' => '$10',
+				'25.00' => '$25',
+				'50.00' => '$50',
+				'100.00' => '$100',
+				'250.00' => '$250',
+				'500.00' => '$500',
+				'1000.00' => '$1,000',
+				'custom' => '<label for="ngp_custom_dollar_amt">Other:</label> <input type="text" name="custom_dollar_amt" class="ngp_custom_dollar_amt" /> (USD)'
+			)
+		),
+		array(
+			'type' => 'text',
+			'slug' => 'CreditCardNumber',
+			'required' => 'true',
+			'label' => 'Credit Card Number'
+		),
+		array(
+			'type' => 'select',
+			'slug' => 'ExpMonth',
+			'required' => 'true',
+			'label' => 'Expiration Date',
+			'show_label' => 'true',
+			'show_pre_div' => 'true',
+			'show_post_div' => 'false',
+			'options' => array(
+				'01' => '1 - January',
+				'02' => '2 - February',
+				'03' => '3 - March',
+				'04' => '4 - April',
+				'05' => '5 - May',
+				'06' => '6 - June',
+				'07' => '7 - July',
+				'08' => '8 - August',
+				'09' => '9 - September',
+				'10' => '10 - October',
+				'11' => '11 - November',
+				'12' => '12 - December'					
+			)
+		),
+		array(
+			'type' => 'select',
+			'slug' => 'ExpYear',
+			'required' => 'true',
+			'label' => 'Expiration Year',
+			'show_label' => 'false',
+			'show_placeholder' => 'false',
+			'show_pre_div' => 'false',
+			'options' => array()
+		),
+	)
+	// array(
+	// 	'type' => 'checkbox',
+	// 	'slug' => 'RecurringContrib',
+	// 	'required' => 'true',
+	// 	'label' => 'Recurring Contribution?'
+	// 	'show_label' => 'false'
+	// 	'show_placeholder' => 'false'
+	// )
+);
+
+// To be pulled from DB later.
+// $redirect_url = $res[0]->redirect_url;
+	
+$y = (int)date('Y');
+$y_short = (int)date('y');
+while($y < (int)date('Y', strtotime('+19 years'))) {
+	$fieldsets['Credit card'][3]['options'][$y_short] = $y;
+	$y+=1;
+	$y_short+=1;
+}
+
+function check_security() {
+	global $wpdb, $ngp, $api_key, $url_specified, $any_errors;
 	$server_url_parts = explode('.', $_SERVER["SERVER_NAME"]);
 	if(!empty($url_specified) && $server_url_parts[count($server_url_parts)-1]!=='dev') {
 		$url_parts = $url_specified;
@@ -23,162 +167,116 @@ function ngp_show_form( $atts, $form=true ) {
 		exit();
 	}
 	
-	$api_key = get_option('ngp_api_key', '');
-	
 	if(empty($api_key)) {
 		return 'Not currently configured.';
 		exit();
 	}
+	return true;
+}
+
+/* Submits and reroutes donation form */
+function ngp_process_form() {
+	global $wpdb, $ngp, $api_key, $fieldsets, $url_specified, $redirect_url, $ngp_error, $any_errors, $been_processed;
+	if($been_processed) { return false; exit(); }
 	
-	$ngp_error = false;
-	
-	extract( shortcode_atts( array(
-			'id' => null,
-			'slug' => null
-	), $atts ) );
-	
-	// To be pulled from DB later.
-	// $redirect_url = $res[0]->redirect_url;
-	$redirect_url = get_option('ngp_thanks_url', '/thank-you-for-your-contribution');
-	
-	$fieldsets = array(
-		'Personal Information' => array(
-			array(
-				'type' => 'text',
-				'slug' => 'FullName',
-				'required' => 'true',
-				'label' => 'Name',
-			),
-			array(
-				'type' => 'text',
-				'slug' => 'Email',
-				'required' => 'false',
-				'label' => 'Email Address'
-			),
-			array(
-				'type' => 'text',
-				'slug' => 'Address1',
-				'required' => 'true',
-				'label' => 'Street Address'
-			),
-			// array(
-			// 	'type' => 'text',
-			// 	'slug' => 'Address2',
-			// 	'required' => 'false',
-			// 	'label' => 'Address (Cont.)'
-			// 	'show_label' => 'false'
-			// ),
-			// array(
-			// 	'type' => 'text',
-			// 	'slug' => 'City',
-			// 	'required' => 'true',
-			// 	'label' => 'City'
-			// ),
-			// array(
-			// 	'type' => 'text',
-			// 	'slug' => 'State',
-			// 	'required' => 'true',
-			// 	'label' => 'State'
-			// 	'options' => array('AK'=>'AK','AL'=>'AL','AR'=>'AR','AZ'=>'AZ','CA'=>'CA','CO'=>'CO','CT'=>'CT','DC'=>'DC','DE'=>'DE','FL'=>'FL','GA'=>'GA','HI'=>'HI','IA'=>'IA','ID'=>'ID','IL'=>'IL','IN'=>'IN','KS'=>'KS','KY'=>'KY','LA'=>'LA','MA'=>'MA','MD'=>'MD','ME'=>'ME','MI'=>'MI','MN'=>'MN','MO'=>'MO','MS'=>'MS','MT'=>'MT','NC'=>'NC','ND'=>'ND','NE'=>'NE','NH'=>'NH','NJ'=>'NJ','NM'=>'NM','NV'=>'NV','NY'=>'NY','OH'=>'OH','OK'=>'OK','OR'=>'OR','PA'=>'PA','RI'=>'RI','SC'=>'SC','SD'=>'SD','TN'=>'TN','TX'=>'TX','UT'=>'UT','VA'=>'VA','VT'=>'VT','WA'=>'WA','WI'=>'WI','WV'=>'WV','WY'=>'WY')
-			// ),
-			array(
-				'type' => 'text',
-				'slug' => 'Zip',
-				'required' => 'true',
-				'label' => 'Zip Code'
-			)
-		),
-		'Employment' => array(
-			'html_intro' => '<p>Federal law requires us to use our best efforts to collect and report the name, mailing address, occupation, and employer of individuals whose contributions exceed $200 in an election cycle.</p>',
-			array(
-				'type' => 'text',
-				'slug' => 'Employer',
-				'required' => 'true',
-				'label' => 'Employer'
-			),
-			array(
-				'type' => 'text',
-				'slug' => 'Occupation',
-				'required' => 'true',
-				'label' => 'Occupation (if none, put "n/a" or "self-employed")'
-			)
-		),
-		'Credit card' => array(
-			'html_intro' => '<p id="accepted-cards" style="margin: 0pt 0pt -5px; background: url(/wp-content/plugins/'.plugin_basename(dirname(__FILE__)).'/credit-card-logos.png) no-repeat scroll 0% 0% transparent; text-indent: -900em; width: 211px; height: 34px;">We accept Visa, Mastercard, American Express and Discover cards.</p>',
-			array(
-				'type' => 'radio',
-				'slug' => 'Amount',
-				'required' => 'true',
-				'label' => 'Amount',
-				'options' => array(
-					'10.00' => '$10',
-					'25.00' => '$25',
-					'50.00' => '$50',
-					'100.00' => '$100',
-					'250.00' => '$250',
-					'500.00' => '$500',
-					'1000.00' => '$1,000',
-					'custom' => '<label for="ngp_custom_dollar_amt">Other:</label> <input type="text" name="custom_dollar_amt" class="ngp_custom_dollar_amt" /> (USD)'
-				)
-			),
-			array(
-				'type' => 'text',
-				'slug' => 'CreditCardNumber',
-				'required' => 'true',
-				'label' => 'Credit Card Number'
-			),
-			array(
-				'type' => 'select',
-				'slug' => 'ExpMonth',
-				'required' => 'true',
-				'label' => 'Expiration Date',
-				'show_label' => 'true',
-				'show_pre_div' => 'true',
-				'show_post_div' => 'false',
-				'options' => array(
-					'01' => '1 - January',
-					'02' => '2 - February',
-					'03' => '3 - March',
-					'04' => '4 - April',
-					'05' => '5 - May',
-					'06' => '6 - June',
-					'07' => '7 - July',
-					'08' => '8 - August',
-					'09' => '9 - September',
-					'10' => '10 - October',
-					'11' => '11 - November',
-					'12' => '12 - December'					
-				)
-			),
-			array(
-				'type' => 'select',
-				'slug' => 'ExpYear',
-				'required' => 'true',
-				'label' => 'Expiration Year',
-				'show_label' => 'false',
-				'show_placeholder' => 'false',
-				'show_pre_div' => 'false',
-				'options' => array()
-			),
-		)
-		// array(
-		// 	'type' => 'checkbox',
-		// 	'slug' => 'RecurringContrib',
-		// 	'required' => 'true',
-		// 	'label' => 'Recurring Contribution?'
-		// 	'show_label' => 'false'
-		// 	'show_placeholder' => 'false'
-		// )
-	);
-	
-	$y = (int)date('Y');
-	$y_short = (int)date('y');
-	while($y < (int)date('Y', strtotime('+19 years'))) {
-		$fieldsets['Credit card'][3]['options'][$y_short] = $y;
-		$y+=1;
-		$y_short+=1;
+	$resp = (object) array('is_valid' => true);
+
+	$check_security = check_security();
+	if($check_security!==true) {
+		return false;
+		exit();
 	}
 	
+	if(!empty($_POST)) {
+		if(wp_verify_nonce($_POST['ngp_add'], 'ngp_nonce_field')) // && $_POST['ngp_form_id']==$id
+		{
+			foreach($fieldsets as $fkey => $fieldset) {
+				foreach($fieldset as $key => $field) {
+					if($key!='html_intro') {
+						if($field['required']=='true' && (!isset($_POST[$field['slug']]) || empty($_POST[$field['slug']]))) {
+							$fieldsets[$fkey][$key]['error'] = true;
+							$any_errors = true;
+						}
+					}
+				}
+			}
+		
+			if(!$resp->is_valid) {
+				$any_errors = true;
+			}
+			
+			if(!$any_errors) {
+				// Split Name
+				$payment_data = $_POST;
+				if(isset($_POST['FullName']) && !empty($_POST['FullName'])) {
+					$names = explode(' ', $_POST['FullName']);
+					// Attempt payment
+					unset($payment_data['ngp_form_id']);
+					unset($payment_data['ngp_add']);
+					unset($payment_data['FullName']);
+					unset($payment_data['_wp_http_referer']);
+					$payment_data['FirstName'] = $names[0];
+					$payment_data['LastName'] = $names[(count($names)-1)];
+				
+					// setlocale(LC_MONETARY, 'en_US');
+					if(!empty($payment_data['custom_dollar_amt'])) {
+						// $payment_data['Amount'] = str_replace('$', '', money_format('%.2n', $payment_data['custom_dollar_amt']));
+						$payment_data['Amount'] = number_format($payment_data['custom_dollar_amt'], 2, '.', '');
+					} else {
+						// $payment_data['Amount'] = str_replace('$', '', money_format('%.2n', $payment_data['Amount']));
+						$payment_data['Amount'] = number_format($payment_data['Amount'], 2, '.', '');
+					}
+					unset($payment_data['custom_dollar_amt']);
+					$payment_data['Cycle'] = date('Y');
+				
+					require_once('NgpDonation.php');
+					$send_email  = (isset($payment_data['Email']) && !empty($payment_data['Email'])) ? true : false;
+					$donation = new NgpDonation($api_key, $send_email, $payment_data);
+					if($donation->save()) {
+						// Success!
+						// Redirect.
+						$_POST = array();
+						$been_processed = true;
+						// require_once(dirname(dirname(dirname(__FILE__))).'/wp-includes/pluggable.php');
+						header('Location: '.$redirect_url);
+						exit;
+					} else {
+						// Failure.
+						$ngp_error = true;
+					}
+				} else {
+					$field['Contributor'][0]['error'] = true;
+				}
+			
+			}
+		} else if(!empty($_POST) && isset($_POST['ngp_add']) && !wp_verify_nonce($_POST['ngp_add'], 'ngp_nonce_field')) {
+			$ngp_error = true;
+		}
+		/* else if(!empty($_POST) && $_POST['ngp_form_id']!=$id) {
+			$ngp_error = true;
+		} */
+		$been_processed = true;
+	}
+}
+
+/**
+ * Shows form used to donate
+ */
+function ngp_show_form( $atts, $form=true ) {
+	global $wpdb, $ngp, $api_key, $fieldsets, $url_specified, $redirect_url, $ngp_error, $any_errors;
+	
+	$check_security = check_security();
+	
+	if($check_security!==true) {
+		return false;
+		exit();
+	}
+	
+	// extract( shortcode_atts( array(
+	// 		'id' => null,
+	// 		'slug' => null
+	// ), $atts ) );
+		
 	// Get the Form from the DB
 	// TODO: Later, let's make the forms configurable
 	// if($id) {
@@ -191,78 +289,14 @@ function ngp_show_form( $atts, $form=true ) {
 	// 
 	// $fields = unserialize($res[0]->data);
 	
-	$resp = (object) array('is_valid' => true);
-	
 	// if(count($res) == 1) {
-	$any_errors = false;
-	if(wp_verify_nonce($_POST['ngp_add'], 'ngp_nonce_field')) // && $_POST['ngp_form_id']==$id
-	{
-		foreach($fieldsets as $fieldset) {
-			foreach($fieldset as $key => $field) {
-				if($key!='html_intro') {
-					if($field['required']=='true' && (!isset($_POST[$field['slug']]) || empty($_POST[$field['slug']]))) {
-						$fields[$key]['error'] = true;
-						$any_errors = true;
-					}
-				}
-			}
-		}
-		
-		if(!$resp->is_valid) {
-			$any_errors = true;
-		}
-			
-		if(!$any_errors) {
-			// Split Name
-			$payment_data = $_POST;
-			if(isset($_POST['FullName']) && !empty($_POST['FullName'])) {
-				$names = explode(' ', $_POST['FullName']);
-				// Attempt payment
-				unset($payment_data['ngp_form_id']);
-				unset($payment_data['ngp_add']);
-				unset($payment_data['FullName']);
-				unset($payment_data['_wp_http_referer']);
-				$payment_data['FirstName'] = $names[0];
-				$payment_data['LastName'] = $names[(count($names)-1)];
-				
-				// setlocale(LC_MONETARY, 'en_US');
-				if(!empty($payment_data['custom_dollar_amt'])) {
-					// $payment_data['Amount'] = str_replace('$', '', money_format('%.2n', $payment_data['custom_dollar_amt']));
-					$payment_data['Amount'] = number_format($payment_data['custom_dollar_amt'], 2, '.', '');
-				} else {
-					// $payment_data['Amount'] = str_replace('$', '', money_format('%.2n', $payment_data['Amount']));
-					$payment_data['Amount'] = number_format($payment_data['Amount'], 2, '.', '');
-				}
-				unset($payment_data['custom_dollar_amt']);
-				$payment_data['Cycle'] = date('Y');
-				
-				require_once('NgpDonation.php');
-				$send_email  = (isset($payment_data['Email']) && !empty($payment_data['Email'])) ? true : false;
-				$donation = new NgpDonation($api_key, $send_email, $payment_data);
-				if($donation->save()) {
-					// Success!
-					// Redirect.
-					wp_redirect($redirect_url);
-					exit;
-				} else {
-					// Failure.
-					$ngp_error = true;
-				}
-			} else {
-				$field['Contributor'][0]['error'] = true;
-			}
-			
-		}
-	} else if(!empty($_POST) && isset($_POST['ngp_add']) && !wp_verify_nonce($_POST['ngp_add'], 'ngp_nonce_field')) {
-		$ngp_error = true;
+	if(!empty($_POST)) {
+		ngp_process_form();
 	}
-	/* else if(!empty($_POST) && $_POST['ngp_form_id']!=$id) {
-		$ngp_error = true;
-	} */
 		
 	$form_fields = '';
 	// Loop through and generate the elements
-		
+	
 	foreach($fieldsets as $fieldset_name => $fields) {
 		$form_fields .= '<fieldset><legend>'.$fieldset_name.'</legend>';
 		if(isset($fields['html_intro'])) {
