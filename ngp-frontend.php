@@ -29,6 +29,9 @@ class NGPDonationFrontend {
 	// Populated with the NGP fieldsets
 	var $fieldsets = array();
 	
+	// Support phone for error messages.
+	var $support_phone = '';
+	
 	/*
 	 * Construct
 	 * Here we populate many of the above vars from the WP options.
@@ -36,6 +39,7 @@ class NGPDonationFrontend {
 	function __construct() {
 		$this->api_key = get_option('ngp_api_key', '');
 		$this->url_specified = get_option('ngp_secure_url', '');
+		$this->support_phone = get_option('ngp_support_phone', '');
 		
 		// To be pulled from DB later.
 		// $this->redirect_url = $res[0]->redirect_url;
@@ -560,8 +564,21 @@ class NGPDonationFrontend {
 			}
 			$form_fields .= '</fieldset>';
 		}
-		if($this->ngp_error) { echo '<div id="ngp_alert">Sorry, but your payment could not be processed. Please try again or call '.get_option('ngp_support_phone').'</div>'; }
-	
+		
+		if($this->any_errors) {
+			echo '<div class="errMsg ngp_alert">There were errors in your payment submission. Please fix below and try again';
+			if(!empty($this->support_phone)) {
+				echo ' or call '.$this->support_phone;
+			}
+			echo '.</div>';
+		} else if($this->ngp_error) {
+			echo '<div class="errMsg ngp_alert">Sorry, but your payment could not be processed. Please try again';
+			if(!empty($this->support_phone)) {
+				echo ' or call '.$this->support_phone;
+			}
+			echo '.</div>';
+		}
+		
 		if(!empty($form_fields)) {
 		?>
 			<form <?php if($file) { echo 'enctype="multipart/form-data" '; } ?>name="ngp_user_news" class="ngp_user_submission" id="ngp_form" action="<?php echo $_SERVER['REQUEST_URI']; ?>" method="post">
