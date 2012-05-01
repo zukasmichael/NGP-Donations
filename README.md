@@ -18,6 +18,18 @@ Place this short tag on the appropriate page or article:
 
 	[ngp_show_form]
 
+### Suggested jQuery
+
+We use the following on our donation pages to make sure that the user understands that the radio buttons and the input field are for the same thing. If the user doesn't support javascript and the custom field holds a value, it always overrides whatever's selected in the radio buttons.
+
+	$('.ngp_custom_dollar_amt').keyup(function() {
+		if($(this).val()!='') { $('.Amount').attr('checked', false); }
+	});
+	$('.Amount').mouseup(function() {
+		$('.ngp_custom_dollar_amt').val('');
+	});
+
+
 ### Alert!
 
 You should be running your site under an SSL certificate if you utilize this plugin.
