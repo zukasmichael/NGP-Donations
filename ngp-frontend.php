@@ -2,6 +2,60 @@
 
 class NGPDonationFrontend {
 	
+	var $state_list = array(
+		'Alabama'=>'AL',
+		'Alaska'=>'AK',
+		'Arizona'=>'AZ',
+		'Arkansas'=>'AR',
+		'California'=>'CA',
+		'Colorado'=>'CO',
+		'Connecticut'=>'CT',
+		'Delaware'=>'DE',
+		'District Of Columbia'=>'DC',
+		'Florida'=>'FL',
+		'Georgia'=>'GA',
+		'Hawaii'=>'HI',
+		'Idaho'=>'ID',
+		'Illinois'=>'IL',
+		'Indiana'=>'IN',
+		'Iowa'=>'IA',
+		'Kansas'=>'KS',
+		'Kentucky'=>'KY',
+		'Louisiana'=>'LA',
+		'Maine'=>'ME',
+		'Maryland'=>'MD',
+		'Massachusetts'=>'MA',
+		'Michigan'=>'MI',
+		'Minnesota'=>'MN',
+		'Mississippi'=>'MS',
+		'Missouri'=>'MO',
+		'Montana'=>'MT',
+		'Nebraska'=>'NE',
+		'Nevada'=>'NV',
+		'New Hampshire'=>'NH',
+		'New Jersey'=>'NJ',
+		'New Mexico'=>'NM',
+		'New York'=>'NY',
+		'North Carolina'=>'NC',
+		'North Dakota'=>'ND',
+		'Ohio'=>'OH',
+		'Oklahoma'=>'OK',
+		'Oregon'=>'OR',
+		'Pennsylvania'=>'PA',
+		'Rhode Island'=>'RI',
+		'South Carolina'=>'SC',
+		'South Dakota'=>'SD',
+		'Tennessee'=>'TN',
+		'Texas'=>'TX',
+		'Utah'=>'UT',
+		'Vermont'=>'VT',
+		'Virginia'=>'VA',
+		'Washington'=>'WA',
+		'West Virginia'=>'WV',
+		'Wisconsin'=>'WI',
+		'Wyoming'=>'WY'
+	);
+	
 	// The API Key for NGP (should be a superlong string.)
 	var $api_key = '';
 	
@@ -72,19 +126,19 @@ class NGPDonationFrontend {
 				// 	'label' => 'Address (Cont.)'
 				// 	'show_label' => 'false'
 				// ),
-				// array(
-				// 	'type' => 'text',
-				// 	'slug' => 'City',
-				// 	'required' => 'true',
-				// 	'label' => 'City'
-				// ),
-				// array(
-				// 	'type' => 'text',
-				// 	'slug' => 'State',
-				// 	'required' => 'true',
-				// 	'label' => 'State'
-				// 	'options' => array('AK'=>'AK','AL'=>'AL','AR'=>'AR','AZ'=>'AZ','CA'=>'CA','CO'=>'CO','CT'=>'CT','DC'=>'DC','DE'=>'DE','FL'=>'FL','GA'=>'GA','HI'=>'HI','IA'=>'IA','ID'=>'ID','IL'=>'IL','IN'=>'IN','KS'=>'KS','KY'=>'KY','LA'=>'LA','MA'=>'MA','MD'=>'MD','ME'=>'ME','MI'=>'MI','MN'=>'MN','MO'=>'MO','MS'=>'MS','MT'=>'MT','NC'=>'NC','ND'=>'ND','NE'=>'NE','NH'=>'NH','NJ'=>'NJ','NM'=>'NM','NV'=>'NV','NY'=>'NY','OH'=>'OH','OK'=>'OK','OR'=>'OR','PA'=>'PA','RI'=>'RI','SC'=>'SC','SD'=>'SD','TN'=>'TN','TX'=>'TX','UT'=>'UT','VA'=>'VA','VT'=>'VT','WA'=>'WA','WI'=>'WI','WV'=>'WV','WY'=>'WY')
-				// ),
+				array(
+					'type' => 'hidden',
+					'slug' => 'City',
+					// 'required' => 'true',
+					// 'label' => 'City'
+				),
+				array(
+					'type' => 'hidden',
+					'slug' => 'State',
+					// 'required' => 'true',
+					// 'label' => 'State',
+					// 'options' => array('AK'=>'AK','AL'=>'AL','AR'=>'AR','AZ'=>'AZ','CA'=>'CA','CO'=>'CO','CT'=>'CT','DC'=>'DC','DE'=>'DE','FL'=>'FL','GA'=>'GA','HI'=>'HI','IA'=>'IA','ID'=>'ID','IL'=>'IL','IN'=>'IN','KS'=>'KS','KY'=>'KY','LA'=>'LA','MA'=>'MA','MD'=>'MD','ME'=>'ME','MI'=>'MI','MN'=>'MN','MO'=>'MO','MS'=>'MS','MT'=>'MT','NC'=>'NC','ND'=>'ND','NE'=>'NE','NH'=>'NH','NJ'=>'NJ','NM'=>'NM','NV'=>'NV','NY'=>'NY','OH'=>'OH','OK'=>'OK','OR'=>'OR','PA'=>'PA','RI'=>'RI','SC'=>'SC','SD'=>'SD','TN'=>'TN','TX'=>'TX','UT'=>'UT','VA'=>'VA','VT'=>'VT','WA'=>'WA','WI'=>'WI','WV'=>'WV','WY'=>'WY')
+				),
 				array(
 					'type' => 'text',
 					'slug' => 'Zip',
@@ -122,7 +176,7 @@ class NGPDonationFrontend {
 						'250.00' => '$250',
 						'500.00' => '$500',
 						'1000.00' => '$1,000',
-						'custom' => '<label for="ngp_custom_dollar_amt">Other:</label> <input type="text" name="custom_dollar_amt" class="ngp_custom_dollar_amt" /> (USD)'
+						'custom' => '<label for="ngp_custom_dollar_amt">Other:</label> <input type="text" name="custom_dollar_amt"'.(isset($_POST['custom_dollar_amt']) ? ' value="'.$_POST['custom_dollar_amt'].'"' : '').' class="ngp_custom_dollar_amt" /> (USD)'
 					)
 				),
 				array(
@@ -241,8 +295,12 @@ class NGPDonationFrontend {
 					foreach($fieldset as $key => $field) {
 						if($key!=='html_intro') {
 							if($field['required']=='true' && (!isset($_POST[$field['slug']]) || empty($_POST[$field['slug']]))) {
-								$this->fieldsets[$fkey][$key]['error'] = true;
-								$this->any_errors = true;
+								if($field['slug']=='Amount' && !empty($_POST['custom_dollar_amt'])) {
+									// Do nothing
+								} else {
+									$this->fieldsets[$fkey][$key]['error'] = true;
+									$this->any_errors = true;
+								}
 							}
 						}
 					}
@@ -260,7 +318,20 @@ class NGPDonationFrontend {
 						unset($payment_data['_wp_http_referer']);
 						$payment_data['FirstName'] = $names[0];
 						$payment_data['LastName'] = $names[(count($names)-1)];
-				
+						
+						if((isset($_POST['City']) && empty($_POST['City'])) || (isset($_POST['State']) && empty($_POST['State']))) {
+							$result = wp_remote_get('http://zip.elevenbasetwo.com/'.$_POST['Zip']);
+							$result = json_decode($result['body']);
+							
+							if(isset($_POST['City']) && empty($_POST['City']) && isset($result->city)) {
+								$payment_data['City'] = ucwords(strtolower($result->city));
+							}
+							
+							if(isset($_POST['State']) && empty($_POST['State']) && isset($result->state)) {
+								$payment_data['State'] = $result->state;
+							}
+						}
+						
 						// setlocale(LC_MONETARY, 'en_US');
 						if(!empty($payment_data['custom_dollar_amt'])) {
 							// $payment_data['Amount'] = str_replace('$', '', money_format('%.2n', $payment_data['custom_dollar_amt']));
@@ -305,7 +376,7 @@ class NGPDonationFrontend {
 	/**
 	 * Shows form used to donate
 	 */
-	function show_form( $atts, $form=true ) {
+	function show_form( $atts=null, $form=true ) {
 		global $wpdb, $ngp;
 	
 		$check_security = $this->check_security();
