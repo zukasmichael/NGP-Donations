@@ -1,7 +1,7 @@
 <?php
 /*
 	Plugin Name: NGP Donations
-	Plugin URI: http://revolutionmessaging.com
+	Plugin URI: http://revolutionmessaging.com/code/ngp-donations/
 	Description: Integrate NGP donation forms with your site
 	Version: 0.2.1
 	Author: Revolution Messaging
