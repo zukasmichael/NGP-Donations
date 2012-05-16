@@ -676,8 +676,8 @@ class NGPDonationFrontend {
 					<li>I am not a minor under the age of 16.</li>
 					<li>The funds I am donating are not being provided to me by another person or entity for the purpose of making this contribution.</li>
 				</ol>
-			
-				<?php echo get_option('ngp_footer_info'); ?>
+				<?php // TODO: Check this. ?>
+				<?php echo '<p class="addtl-donation-footer-info">'.str_replace("\r\n", '<br />', get_option('ngp_footer_info')).'</p>'; ?>
 			</form>
 			<?php
 		}
