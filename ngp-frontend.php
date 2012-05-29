@@ -334,10 +334,8 @@ class NGPDonationFrontend {
 						
 						// setlocale(LC_MONETARY, 'en_US');
 						if(!empty($payment_data['custom_dollar_amt'])) {
-							// $payment_data['Amount'] = str_replace('$', '', money_format('%.2n', $payment_data['custom_dollar_amt']));
-							$payment_data['Amount'] = number_format($payment_data['custom_dollar_amt'], 2, '.', '');
+							$payment_data['Amount'] = number_format(str_replace('$', '', $payment_data['custom_dollar_amt']), 2, '.', '');
 						} else {
-							// $payment_data['Amount'] = str_replace('$', '', money_format('%.2n', $payment_data['Amount']));
 							$payment_data['Amount'] = number_format($payment_data['Amount'], 2, '.', '');
 						}
 						unset($payment_data['custom_dollar_amt']);
