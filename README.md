@@ -20,10 +20,8 @@ Place this short tag on the appropriate page or article:
 
 You can source an article in two ways:
 
-1. Put source in the embed tag:
-	[ngp_show_form source="hard-hitting-ad"]
-2. Put the source in a GET querystring:
-	http://mycamapign.com/donation?source=hard-hitting-ad
+1. Put source in the embed tag: `[ngp_show_form source="hard-hitting-ad"]`
+2. Put the source in a GET querystring: `http://mycamapign.com/donation?source=hard-hitting-ad`
 
 If you want to have a default donation source, put it in the embed tag and then override it with a querystring source when you need to.
 
