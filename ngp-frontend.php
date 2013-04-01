@@ -376,7 +376,11 @@ class NGPDonationFrontend {
 	 */
 	function show_form( $atts=null, $form=true ) {
 		global $wpdb, $ngp;
-	
+		
+		extract( shortcode_atts( array(
+			'source' => null,
+		), $atts ) );
+		
 		$check_security = $this->check_security();
 	
 		if($check_security!==true) {
@@ -407,6 +411,10 @@ class NGPDonationFrontend {
 		}
 		
 		$form_fields = '';
+		if(isset($_GET['source']))
+			$form_fields .= '<input type="hidden" name="Source" value="'.$_GET['source'].'" />';
+		else if(isset($source))
+			$form_fields .= '<input type="hidden" name="Source" value="'.$source.'" />';
 		// Loop through and generate the elements
 	
 		foreach($this->fieldsets as $fieldset_name => $fields) {
