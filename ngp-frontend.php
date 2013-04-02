@@ -341,7 +341,7 @@ class NGPDonationFrontend {
 						unset($payment_data['custom_dollar_amt']);
 						$payment_data['Cycle'] = date('Y');
 						
-						require_once('NgpDonation.php');
+						require_once(dirname(__FILE__).'/NgpDonation.php');
 						$send_email  = (isset($payment_data['Email']) && !empty($payment_data['Email'])) ? true : false;
 						$donation = new NgpDonation($this->api_key, $send_email, $payment_data);
 						if($donation->save()) {

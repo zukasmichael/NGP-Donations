@@ -39,9 +39,14 @@ if (!function_exists('add_action')){
 
 add_action('admin_init', 'ngp_admin_init');
 add_shortcode('ngp_show_form', 'ngp_show_form');
+add_shortcode('ngp_show_signup', 'ngp_show_signup');
 
 if(isset($_POST['ngp_add'])) {
 	add_action('wp', 'ngp_process_form');
+}
+
+if(isset($_POST['ngp_signup'])) {
+	add_action('wp', 'ngp_process_signup');
 }
 
 function ngp_admin_init() {
@@ -53,6 +58,15 @@ function ngp_admin_init() {
 		'ngp_api_key_field',
 		'general'
 	);
+	register_setting('general', 'ngp_support_phone', 'esc_attr');
+	add_settings_field(
+		'ngp_support_phone',
+		'<label for="ngp_support_phone">'.__('Donation Support Phone Line' , 'ngp_support_phone' ).'</label>',
+		'ngp_support_phone',
+		'general'
+	);
+	
+	// Donation-Specific Stuff
 	register_setting('general', 'ngp_thanks_url', 'esc_attr');
 	add_settings_field(
 		'ngp_thanks_url',
@@ -67,18 +81,20 @@ function ngp_admin_init() {
 		'ngp_secure_url',
 		'general'
 	);
-	register_setting('general', 'ngp_support_phone', 'esc_attr');
-	add_settings_field(
-		'ngp_support_phone',
-		'<label for="ngp_support_phone">'.__('Donation Support Phone Line' , 'ngp_support_phone' ).'</label>',
-		'ngp_support_phone',
-		'general'
-	);
 	register_setting('general', 'ngp_footer_info', 'esc_attr');
 	add_settings_field(
 		'ngp_footer_info',
 		'<label for="ngp_footer_info">'.__('Addt\'l Information for Donation Footer' , 'ngp_footer_info' ).'</label>',
 		'ngp_footer_info',
+		'general'
+	);
+	
+	// Signup Stuff
+	register_setting('general', 'ngp_signup_thanks_url', 'esc_attr');
+	add_settings_field(
+		'ngp_signup_thanks_url',
+		'<label for="ngp_signup_thanks_url">'.__('"Thanks for Signing Up" URL' , 'ngp_signup_thanks_url' ).'<br /> (e.g. "/thanks")</label>',
+		'ngp_signup_thanks_url_field',
 		'general'
 	);
 	// add_action('wp_head', 'ngp_head');
@@ -93,6 +109,11 @@ function ngp_api_key_field() {
 function ngp_thanks_url_field() {
 	$value = get_option('ngp_thanks_url', '');
 	echo '<input type="text" style="width:300px;" id="ngp_thanks_url" name="ngp_thanks_url" value="' . $value . '" />';
+}
+
+function ngp_signup_thanks_url_field() {
+	$value = get_option('ngp_signup_thanks_url', '');
+	echo '<input type="text" style="width:300px;" id="ngp_signup_thanks_url" name="ngp_signup_thanks_url" value="' . $value . '" />';
 }
 
 function ngp_support_phone() {

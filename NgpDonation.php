@@ -390,4 +390,3 @@ class NgpDonation {
         return !empty($this->fault);
     }
 }
-?>
