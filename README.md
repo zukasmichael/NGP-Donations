@@ -48,8 +48,10 @@ Place this short tag on the appropriate page or article:
 
 	[ngp_show_signup campaign_id="[Put Campaign ID here]" fields="Email|Zip" main_code="[Put Tag here]" thanks_url="/thanks"]
 
-Fields is a pipe-delimited set of the fields you want to display. Complete set of values is: `Name|Email|Phone|StreetAddress|Zip`.
+The `fields` property is a pipe-delimited set of the fields you want to display. A complete set of values is: `Name|Email|Phone|StreetAddress|Zip`.
 
-The main code has to be rcreated ahead of time in NGP: http://help.ngphost.com/content/creating-coded-landing-pages (Steps 1-5 are all you need to do in order to make sure your code is saved in myNGP.com)
+The `main_code` has to be created ahead of time in NGP: [http://help.ngphost.com/content/creating-coded-landing-pages](http://help.ngphost.com/content/creating-coded-landing-pages)
 
-Thanks url is optional and defaults to `/thank-you-for-signing-up`.
+Steps 1-5 are all you need to do in order to make sure your code is saved in myNGP.com.
+
+The `thanks_url` property is optional and defaults to `/thank-you-for-signing-up`.
