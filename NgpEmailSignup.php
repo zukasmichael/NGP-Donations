@@ -1,7 +1,5 @@
 <?php
-/* Adapted from http://www.moiagroup.com/archives/using-the-ngp-api/664 & New Media Campaign's Contribution PHP class.
- *
- *
+/* 
  * MIT LICENSE
  *
  * Permission is hereby granted, free of charge, to any person obtaining
@@ -31,7 +29,7 @@
  *
  * $d = new NgpEmailSignup(array(
  *         'credentials'=>'[NGP-generated Credentials String]',
- *         'mainCode'=>'[Main Code]',
+ *         'userID'=>'[User ID]',
  *         'campaignID'=>'[Campaign ID]'
  *     ),
  *     array(
@@ -59,7 +57,7 @@ class NgpEmailSignup {
     /**
      * @var string Provided by NGP
      */
-    protected $credentials;
+    protected $credentialString;
 
     /**
      * @var string Campaign ID
@@ -67,9 +65,9 @@ class NgpEmailSignup {
     protected $campaignID;
 
     /**
-     * @var array[String] Main Code (?)
+     * @var array[Int] User ID
      */
-    protected $mainCode;
+    protected $userID;
 
     /**
      * @var array[String] Case sensitive!
@@ -110,9 +108,11 @@ class NgpEmailSignup {
      * @return  void
      */
     public function __construct( $configuration, $data = array() ) {
-        $this->client = new SoapClient('http://www.myngp.com/ngpapi/APIService.asmx?wsdl');
-        $this->credentials = $configuration['credentials'];
-        $this->mainCode = $configuration['mainCode'];
+        if( !class_exists( 'WP_Http' ) )
+            include_once( ABSPATH . WPINC. '/class-http.php' );
+        $this->client = new WP_Http();
+        $this->credentialString = $configuration['credentials'];
+        $this->userID = $configuration['userID'];
         $this->campaignID = $configuration['campaignID'];
         // http://www.myngp.com/ngpapi/transactions/Contact/Contact.xsd
         $this->constituentFields = array(
@@ -138,7 +138,6 @@ class NgpEmailSignup {
         );
         $this->allFields = array_merge(
             $this->constituentFields,
-            $this->paymentFields,
             $data
         );
         $this->requiredFields = array(
@@ -178,20 +177,33 @@ class NgpEmailSignup {
             return false;
         }
         $args = array(
-            'credentials' => $this->credentials,
             'RequestXML' => $this->generateXml(),
-            'transType' => 'contactWithEmailSet'
+            'transType' => 'ContactSetICampaigns',
+            'credentialString' => $this->credentialString
         );
-        try {
-            $res = $this->client->processRequestWithCreds($args);
-            $this->result = new SimpleXMLElement($res->processRequestWithCredsResult);
-            if($this->result->Message=='An unexpected error has occurred.') { return false; } else {
-                return (int)$this->result->VendorResult->Result === 0;
-            }
-        } catch ( SoapFault $e ) {
-            $this->fault = $e;
-            return false;
-        }
+        // WP_Http
+        $headers = array(
+            'User-agent': 'RevMsg Wordpress PLugin (support@revmsg.com)',
+        );
+        $result = $request->request('http://www.myngp.com/ngpapi/APIService.asmx/processRequestWithCreds', array(
+            'method' => 'POST',
+            'body' => $args,
+            'headers' => $headers
+        ));
+        var_dump($result);
+        // test $result['response'] and if OK do something with $result['body']
+        
+        // SOAP
+        // try {
+            // $res = $this->client->processRequestWithCreds($args);
+            // $this->result = new SimpleXMLElement($res->processRequestWithCredsResult);
+            // if($this->result->Message=='An unexpected error has occurred.') { return false; } else {
+            //     return (int)$this->result->VendorResult->Result === 0;
+            // }
+        // } catch ( SoapFault $e ) {
+        //     $this->fault = $e;
+        //     return false;
+        // }
     }
 
     /**
@@ -222,18 +234,22 @@ class NgpEmailSignup {
      * @return string
      */
     public function generateXml() {
-        $xml = '<?xml version="1.0" encoding="utf-8"?>';
-        $xml .= "<contactWithEmailSet>";
-        $xml .= "<contact>";
+        $xml = '<ngp:contactSetICampaigns xmlns:ngp="http://www.ngpsoftware.com/ngpapi" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">';
+        $xml .= '<campaignID>'.$this->campaignID.'</campaignID>';
+        $xml .= '<userID>'.$this->userID.'</userID>';
+        $xml .= '<contact xsi:type="ngp:Contact">';
         $xml .= ( isset( $this->constituentFields['LastName'] ) && !empty( $this->constituentFields['LastName'] ) ) ? "<lastName>{".$this->constituentFields['LastName']."}</lastName>" : '<lastName />';
         $xml .= ( isset( $this->constituentFields['FirstName'] ) && !empty( $this->constituentFields['FirstName'] ) ) ? "<firstName>{".$this->constituentFields['FirstName']."}</firstName>" : '<firstName />';
         $xml .= ( isset( $this->constituentFields['Zip'] ) && !empty( $this->constituentFields['Zip'] ) ) ? "<zip>{".$this->constituentFields['Zip']."}</zip>" : '<zip />';
         $xml .= ( isset( $this->constituentFields['Email'] ) && !empty( $this->constituentFields['Email'] ) ) ? "<email>{".$this->constituentFields['Email']."}</email>" : '<email />';
+        if(isset($this->constituentFields['Phone']) && !empty($this->constituentFields['Phone'])) {
+            $the_phone = $this->constituentFields['Phone'];
+            $the_phone = str_replace('+', '', $the_phone);
+            $xml .= '<mobilePhone>'+$the_phone+'</mobilePhone>';
+            $xml .= '<smsOptIn>1</smsOptIn>';
+        }
         $xml .= "</contact>";
-        $xml .= "<mainCode>{$this->mainCode}</mainCode>";
-        $xml .= "<optIn>1</optIn>";
-        $xml .= "<campaignID>{$this->campaignID}</campaignID>";
-        $xml .= "</contactWithEmailSet>";
+        $xml .= "</ngp:contactSetICampaigns>";
         return $xml;
     }
 
