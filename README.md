@@ -18,6 +18,11 @@ Place this short tag on the appropriate page or article:
 
 	[ngp_show_form]
 
+You can set custom amounts for the donation amount in two ways:
+
+1. Put the amounts in the embed tag: `[ngp_show_form amounts="50,250,1000"]`
+2. Put the amounts in a GET querystring: `http://mycamapign.com/donation?amounts=50,250,1000`
+
 You can source an article in two ways:
 
 1. Put source in the embed tag: `[ngp_show_form source="hard-hitting-ad"]`
