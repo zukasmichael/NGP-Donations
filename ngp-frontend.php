@@ -158,7 +158,7 @@ class NGPDonationFrontend {
 					'type' => 'text',
 					'slug' => 'Occupation',
 					'required' => 'true',
-					'label' => 'Occupation (if none, put "n/a" or "self-employed")'
+					'label' => 'Occupation'
 				)
 			),
 			'Credit card' => array(
@@ -173,9 +173,9 @@ class NGPDonationFrontend {
 						'25.00' => '$25',
 						'50.00' => '$50',
 						'100.00' => '$100',
-						'250.00' => '$250',
 						'500.00' => '$500',
-						'1000.00' => '$1,000',
+						'1000.00' => '$1000',
+						'2600.00' => '$2,600',
 						'custom' => '<label for="ngp_custom_dollar_amt">Other:</label> <input type="text" name="custom_dollar_amt"'.(isset($_POST['custom_dollar_amt']) ? ' value="'.$_POST['custom_dollar_amt'].'"' : '').' class="ngp_custom_dollar_amt" /> (USD)'
 					)
 				),
@@ -260,7 +260,7 @@ class NGPDonationFrontend {
 		} else {
 			$url_parts = $server_url_parts;
 		}
-		if($_SERVER["HTTPS"] != "on" && $url_parts[count($url_parts)-1]!=='dev') {
+		if($_SERVER["HTTPS"] != "on" && $url_parts[count($url_parts)-1]!=='dev' && !isset($_GET['devtest'])) {
 			if(!empty($this->url_specified)) {
 				$newurl = "https://" . $this->url_specified . $_SERVER["REQUEST_URI"];
 			} else {
@@ -334,14 +334,16 @@ class NGPDonationFrontend {
 						
 						// setlocale(LC_MONETARY, 'en_US');
 						if(!empty($payment_data['custom_dollar_amt'])) {
+							// $payment_data['Amount'] = str_replace('$', '', money_format('%.2n', $payment_data['custom_dollar_amt']));
 							$payment_data['Amount'] = number_format(str_replace('$', '', $payment_data['custom_dollar_amt']), 2, '.', '');
 						} else {
+							// $payment_data['Amount'] = str_replace('$', '', money_format('%.2n', $payment_data['Amount']));
 							$payment_data['Amount'] = number_format($payment_data['Amount'], 2, '.', '');
 						}
 						unset($payment_data['custom_dollar_amt']);
 						$payment_data['Cycle'] = date('Y');
 						
-						require_once(dirname(__FILE__).'/NgpDonation.php');
+						require_once('NgpDonation.php');
 						$send_email  = (isset($payment_data['Email']) && !empty($payment_data['Email'])) ? true : false;
 						$donation = new NgpDonation($this->api_key, $send_email, $payment_data);
 						if($donation->save()) {
@@ -376,45 +378,35 @@ class NGPDonationFrontend {
 	 */
 	function show_form( $atts=null, $form=true ) {
 		global $wpdb, $ngp;
-		
-		extract( shortcode_atts( array(
-			'source' => null,
-		), $atts ) );
-		
+	
 		$check_security = $this->check_security();
 	
 		if($check_security!==true) {
 			return false;
 			exit();
 		}
-	
-		// extract( shortcode_atts( array(
-		// 		'id' => null,
-		// 		'slug' => null
-		// ), $atts ) );
+			
+		extract( shortcode_atts( array(
+				'amounts' => '',
+		), $atts ) );
 		
-		// Get the Form from the DB
-		// TODO: Later, let's make the forms configurable
-		// if($id) {
-		// 	$res = $wpdb->get_results('SELECT * FROM '.$psc->forms.' WHERE id="'.$id.'"');
-		// } else if($slug) {
-		// 	$res = $wpdb->get_results('SELECT * FROM '.$psc->forms.' WHERE slug="'.mysql_escape_string($slug).'" LIMIT 0, 1');
-		// } else {
-		// 	echo '<p style="background:pink;border:1px solid red;color:red;padding:5px 10px;">Error, you must provide a slug or id to "ngp_show_forms".</p>';
-		// }
-		// 
-		// $fields = unserialize($res[0]->data);
-	
-		// if(count($res) == 1) {
+		if($amounts!='') {
+			$amounts = explode(',', $amounts);
+			$this->custom_amt_options = array();
+			
+			foreach($amounts as $amount) {
+				$amt = round($amount);
+				$amt = (string) $amt;
+				$this->custom_amt_options[$amt.".00"] = '$'.$amt;
+			}
+			$this->custom_amt_options['custom'] = '<label for="ngp_custom_dollar_amt">Other:</label> <input type="text" name="custom_dollar_amt"'.(isset($_POST['custom_dollar_amt']) ? ' value="'.$_POST['custom_dollar_amt'].'"' : '').' class="ngp_custom_dollar_amt" /> (USD)';
+		}
+		
 		if(!empty($_POST)) {
 			$this->process_form();
 		}
 		
 		$form_fields = '';
-		if(isset($_GET['source']))
-			$form_fields .= '<input type="hidden" name="Source" value="'.$_GET['source'].'" />';
-		else if(isset($source))
-			$form_fields .= '<input type="hidden" name="Source" value="'.$source.'" />';
 		// Loop through and generate the elements
 	
 		foreach($this->fieldsets as $fieldset_name => $fields) {
@@ -568,7 +560,12 @@ class NGPDonationFrontend {
 							$form_fields .= '<div class="errMsg">You must select an option.</div>';
 						}
 						$i = 0;
-						foreach($field['options'] as $val => $labe) {
+						if($field['label']=='Amount' && isset($this->custom_amt_options)) {
+							$the_options = $this->custom_amt_options;
+						} else {
+							$the_options = $field['options'];
+						}
+						foreach($the_options as $val => $labe) {
 							$i++;
 							if($val=='custom') {
 								$form_fields .= '<div class="radio custom-donation-amt">'.$labe.'</div>'."\r\n";
@@ -604,7 +601,9 @@ class NGPDonationFrontend {
 						}
 						foreach($field['options'] as $key => $val) {
 							$form_fields .= '<option value="'.$key.'"';
-							if(isset($default_state) && $default_state==$key) {
+							if(isset($_POST[$field['slug']]) && $_POST[$field['slug']]==$key) {
+								$form_fields .= ' selected="selected"';
+							} else if(isset($default_state) && $default_state==$key) {
 								$form_fields .= ' selected="selected"';
 							}
 							$form_fields .= '>'.$val.'</option>'."\r\n";
@@ -678,12 +677,10 @@ class NGPDonationFrontend {
 					<li>This contribution is not made from the general treasury funds of a corporation, labor organization or national bank.</li>
 					<li>This contribution is not made from the treasury of an entity or person who is a federal contractor.</li>
 					<li>This contribution is not made from the funds of a political action committee.</li>
-					<li>This contribution is not made from the funds of an individual registered as a federal lobbyist or a foreign agent, or an entity that is a federally registered lobbying firm or foreign agent.</li>
-					<li>I am not a minor under the age of 16.</li>
 					<li>The funds I am donating are not being provided to me by another person or entity for the purpose of making this contribution.</li>
 				</ol>
 				<?php // TODO: Check this. ?>
-				<?php echo '<p class="addtl-donation-footer-info">'.str_replace("\r\n", '<br />', get_option('ngp_footer_info')).'</p>'; ?>
+				<?php echo '<p class="addtl-donation-footer-info">'.str_replace("\r\n", '<br />', str_replace('&lt;', '<', str_replace('&gt;', '>', get_option('ngp_footer_info')))).'</p>'; ?>
 			</form>
 			<?php
 		}
@@ -696,7 +693,7 @@ function ngp_process_form() {
 	$ngpDonationFrontend->process_form();
 }
 
-function ngp_show_form() {
+function ngp_show_form($atts=null) {
 	global $ngpDonationFrontend;
-	$ngpDonationFrontend->show_form();
+	$ngpDonationFrontend->show_form($atts);
 }
