@@ -390,6 +390,10 @@ class NGPDonationFrontend {
 				'amounts' => '',
 		), $atts ) );
 		
+		if(isset($_GET['amounts'])) {
+			$amounts = $_GET['amounts'];
+		}
+		
 		if($amounts!='') {
 			$amounts = explode(',', $amounts);
 			$this->custom_amt_options = array();
