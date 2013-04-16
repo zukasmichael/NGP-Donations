@@ -3,18 +3,18 @@
 	Plugin Name: NGP Donations
 	Plugin URI: http://revolutionmessaging.com/code/ngp-donations/
 	Description: Integrate NGP donation forms with your site
-	Version: 0.2.3
+	Version: 0.2.4
 	Author: Revolution Messaging
 	Author URI: http://revolutionmessaging.com
 	Tags: NGP, NGPVAN, Voter Action Network, donations, FEC, politics, fundraising
 	License: MIT
-
+	
 	Copyright 2011 Revolution Messaging LLC (email: support@revolutionmessaging.com)
 	
 	Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
-
+	
 	The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
-
+	
 	THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 	*/
 
@@ -39,14 +39,9 @@ if (!function_exists('add_action')){
 
 add_action('admin_init', 'ngp_admin_init');
 add_shortcode('ngp_show_form', 'ngp_show_form');
-add_shortcode('ngp_show_signup', 'ngp_show_signup');
 
 if(isset($_POST['ngp_add'])) {
 	add_action('wp', 'ngp_process_form');
-}
-
-if(isset($_POST['ngp_signup'])) {
-	add_action('wp', 'ngp_process_signup');
 }
 
 function ngp_admin_init() {
@@ -58,15 +53,6 @@ function ngp_admin_init() {
 		'ngp_api_key_field',
 		'general'
 	);
-	register_setting('general', 'ngp_support_phone', 'esc_attr');
-	add_settings_field(
-		'ngp_support_phone',
-		'<label for="ngp_support_phone">'.__('Donation Support Phone Line' , 'ngp_support_phone' ).'</label>',
-		'ngp_support_phone',
-		'general'
-	);
-	
-	// Donation-Specific Stuff
 	register_setting('general', 'ngp_thanks_url', 'esc_attr');
 	add_settings_field(
 		'ngp_thanks_url',
@@ -81,20 +67,25 @@ function ngp_admin_init() {
 		'ngp_secure_url',
 		'general'
 	);
+	register_setting('general', 'ngp_accept_amex', 'esc_attr');
+	add_settings_field(
+		'ngp_accept_amex',
+		'<label for="ngp_accept_amex">'.__('Check to accept Amex:' , 'ngp_accept_amex' ).'</label>',
+		'ngp_accept_amex',
+		'general'
+	);
+	register_setting('general', 'ngp_support_phone', 'esc_attr');
+	add_settings_field(
+		'ngp_support_phone',
+		'<label for="ngp_support_phone">'.__('Donation Support Phone Line' , 'ngp_support_phone' ).'</label>',
+		'ngp_support_phone',
+		'general'
+	);
 	register_setting('general', 'ngp_footer_info', 'esc_attr');
 	add_settings_field(
 		'ngp_footer_info',
 		'<label for="ngp_footer_info">'.__('Addt\'l Information for Donation Footer' , 'ngp_footer_info' ).'</label>',
 		'ngp_footer_info',
-		'general'
-	);
-	
-	// Signup Stuff
-	register_setting('general', 'ngp_signup_thanks_url', 'esc_attr');
-	add_settings_field(
-		'ngp_signup_thanks_url',
-		'<label for="ngp_signup_thanks_url">'.__('"Thanks for Signing Up" URL' , 'ngp_signup_thanks_url' ).'<br /> (e.g. "/thanks")</label>',
-		'ngp_signup_thanks_url_field',
 		'general'
 	);
 	// add_action('wp_head', 'ngp_head');
@@ -111,11 +102,6 @@ function ngp_thanks_url_field() {
 	echo '<input type="text" style="width:300px;" id="ngp_thanks_url" name="ngp_thanks_url" value="' . $value . '" />';
 }
 
-function ngp_signup_thanks_url_field() {
-	$value = get_option('ngp_signup_thanks_url', '');
-	echo '<input type="text" style="width:300px;" id="ngp_signup_thanks_url" name="ngp_signup_thanks_url" value="' . $value . '" />';
-}
-
 function ngp_support_phone() {
 	$value = get_option('ngp_support_phone', '');
 	echo '<input type="text" style="width:150px;" id="ngp_support_phone" name="ngp_support_phone" value="' . $value . '" />';
@@ -124,6 +110,14 @@ function ngp_support_phone() {
 function ngp_secure_url() {
 	$value = get_option('ngp_secure_url', '');
 	echo '<input type="text" style="width:150px;" id="ngp_secure_url" name="ngp_secure_url" value="' . $value . '" />';
+}
+
+function ngp_accept_amex() {
+	$value = get_option('ngp_accept_amex', '');
+	if($value=='on')
+		echo '<input type="checkbox" id="ngp_accept_amex" name="ngp_accept_amex" checked="checked" />';
+	else
+		echo '<input type="checkbox" id="ngp_accept_amex" name="ngp_accept_amex" />';
 }
 
 function ngp_footer_info() {

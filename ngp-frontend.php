@@ -174,7 +174,7 @@ class NGPDonationFrontend {
 						'50.00' => '$50',
 						'100.00' => '$100',
 						'500.00' => '$500',
-						'1000.00' => '$1000',
+						'1000.00' => '$1,000',
 						'2600.00' => '$2,600',
 						'custom' => '<label for="ngp_custom_dollar_amt">Other:</label> <input type="text" name="custom_dollar_amt"'.(isset($_POST['custom_dollar_amt']) ? ' value="'.$_POST['custom_dollar_amt'].'"' : '').' class="ngp_custom_dollar_amt" /> (USD)'
 					)
@@ -334,10 +334,8 @@ class NGPDonationFrontend {
 						
 						// setlocale(LC_MONETARY, 'en_US');
 						if(!empty($payment_data['custom_dollar_amt'])) {
-							// $payment_data['Amount'] = str_replace('$', '', money_format('%.2n', $payment_data['custom_dollar_amt']));
 							$payment_data['Amount'] = number_format(str_replace('$', '', $payment_data['custom_dollar_amt']), 2, '.', '');
 						} else {
-							// $payment_data['Amount'] = str_replace('$', '', money_format('%.2n', $payment_data['Amount']));
 							$payment_data['Amount'] = number_format($payment_data['Amount'], 2, '.', '');
 						}
 						unset($payment_data['custom_dollar_amt']);
@@ -387,11 +385,18 @@ class NGPDonationFrontend {
 		}
 			
 		extract( shortcode_atts( array(
-				'amounts' => '',
+			'amounts' => '',
+			'source' => '',
 		), $atts ) );
 		
-		if(isset($_GET['amounts'])) {
+		if(isset($_GET['amounts']) && !empty($_GET['amounts'])) {
 			$amounts = $_GET['amounts'];
+		}
+		
+		if(isset($_GET['source'])) {
+			$source = $_GET['source'];
+		} else if(isset($_GET['refcode'])) {
+			$source = $_GET['refcode'];
 		}
 		
 		if($amounts!='') {
@@ -412,7 +417,11 @@ class NGPDonationFrontend {
 		
 		$form_fields = '';
 		// Loop through and generate the elements
-	
+		
+		if(isset($source) && !empty($source)) {
+			$form_fields .= '<input type="hidden" name="Source" value="'.$source.'" />';
+		}
+		
 		foreach($this->fieldsets as $fieldset_name => $fields) {
 			$form_fields .= '<fieldset><legend>'.$fieldset_name.'</legend>';
 			if(isset($fields['html_intro'])) {
@@ -683,8 +692,7 @@ class NGPDonationFrontend {
 					<li>This contribution is not made from the funds of a political action committee.</li>
 					<li>The funds I am donating are not being provided to me by another person or entity for the purpose of making this contribution.</li>
 				</ol>
-				<?php // TODO: Check this. ?>
-				<?php echo '<p class="addtl-donation-footer-info">'.str_replace("\r\n", '<br />', str_replace('&lt;', '<', str_replace('&gt;', '>', get_option('ngp_footer_info')))).'</p>'; ?>
+				<?php echo '<p class="addtl-donation-footer-info">'.str_replace("\r\n", '<br />', str_replace('&lt;i&gt;', '<i>', str_replace('&lt;/i&gt;', '</i>', str_replace('&lt;u&gt;', '<u>', str_replace('&lt;/u&gt;', '</u>', str_replace('&lt;b&gt;', '<b>', str_replace('&lt;/b&gt;', '</b>', get_option('ngp_footer_info')))))))).'</p>'; ?>
 			</form>
 			<?php
 		}

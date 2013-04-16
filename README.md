@@ -4,7 +4,7 @@
 
 Go to `Settings -> General` and fill out the "NGP API Key", "Donation Support Phone Line", and "Addt'l Information for Donation Footer" fields.
 
-"NGP API Key" is how this plugin authenticates with your NGP VAN service.
+"NGP API Key" is how this plugin authenticates with your NGP VAN service. You need to make sure the API Credentials string you get from NGP is for the "CWP" API.
 
 "Thanks for Contributing URL" is where the contributor is sent after a successful contribution.
 
@@ -22,6 +22,8 @@ You can set custom amounts for the donation amount in two ways:
 
 1. Put the amounts in the embed tag: `[ngp_show_form amounts="50,250,1000"]`
 2. Put the amounts in a GET querystring: `http://mycamapign.com/donation?amounts=50,250,1000`
+
+If you want to have a default donation amounts, put it in the embed tag and then override it with a querystring amounts when you need to.
 
 You can source an article in two ways:
 
