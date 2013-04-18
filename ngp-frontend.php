@@ -654,33 +654,34 @@ class NGPDonationFrontend {
 			$form_fields .= '</fieldset>';
 		}
 		
+		$return = '';
 		if($this->any_errors) {
-			echo '<div class="errMsg ngp_alert">There were errors in your payment submission. Please fix below and try again';
+			$return .= '<div class="errMsg ngp_alert">There were errors in your payment submission. Please fix below and try again';
 			if(!empty($this->support_phone)) {
-				echo ' or call '.$this->support_phone;
+				$return .= ' or call '.$this->support_phone;
 			}
-			echo '.</div>';
+			$return .= '.</div>';
 		} else if($this->ngp_error) {
-			echo '<div class="errMsg ngp_alert">Sorry, but your payment could not be processed. Please try again';
+			$return .= '<div class="errMsg ngp_alert">Sorry, but your payment could not be processed. Please try again';
 			if(!empty($this->support_phone)) {
-				echo ' or call '.$this->support_phone;
+				$return .= ' or call '.$this->support_phone;
 			}
-			echo '.</div>';
+			$return .= '.</div>';
 		}
 		
 		if(!empty($form_fields)) {
-		?>
-			<form <?php if($file) { echo 'enctype="multipart/form-data" '; } ?>name="ngp_user_news" class="ngp_user_submission" id="ngp_form" action="<?php echo $_SERVER['REQUEST_URI']; ?>" method="post">
-				<?php
-				// echo '<input type="hidden" name="ngp_form_id" id="ngp_form_id" value="'.$id.'" />';
+			$return .= '<form ';
+			if($file) { $return .= 'enctype="multipart/form-data" '; }
+			$return .= 'name="ngp_user_news" class="ngp_user_submission" id="ngp_form" action="'.$_SERVER['REQUEST_URI'].'" method="post">';
+			// echo '<input type="hidden" name="ngp_form_id" id="ngp_form_id" value="'.$id.'" />';
 			
-				if(function_exists('wp_nonce_field')) {
-					wp_nonce_field('ngp_nonce_field', 'ngp_add');
-				}
+			if(function_exists('wp_nonce_field')) {
+				$return .= wp_nonce_field('ngp_nonce_field', 'ngp_add', true, false);
+			}
 			
-				echo $form_fields;
+			$return .= $form_fields;
 			
-				?>
+			$return .= '
 				<div class="submit">
 					<input type="submit" value="Donate Now" />
 				</div>
@@ -692,9 +693,11 @@ class NGPDonationFrontend {
 					<li>This contribution is not made from the funds of a political action committee.</li>
 					<li>The funds I am donating are not being provided to me by another person or entity for the purpose of making this contribution.</li>
 				</ol>
-				<?php echo '<p class="addtl-donation-footer-info">'.str_replace("\r\n", '<br />', str_replace('&lt;i&gt;', '<i>', str_replace('&lt;/i&gt;', '</i>', str_replace('&lt;u&gt;', '<u>', str_replace('&lt;/u&gt;', '</u>', str_replace('&lt;b&gt;', '<b>', str_replace('&lt;/b&gt;', '</b>', get_option('ngp_footer_info')))))))).'</p>'; ?>
-			</form>
-			<?php
+				';
+			$return .= '<p class="addtl-donation-footer-info">'.str_replace("\r\n", '<br />', str_replace('&lt;i&gt;', '<i>', str_replace('&lt;/i&gt;', '</i>', str_replace('&lt;u&gt;', '<u>', str_replace('&lt;/u&gt;', '</u>', str_replace('&lt;b&gt;', '<b>', str_replace('&lt;/b&gt;', '</b>', get_option('ngp_footer_info')))))))).'</p>';
+			$return .= '</form>';
+			
+			return $return;
 		}
 	}
 }
@@ -707,5 +710,5 @@ function ngp_process_form() {
 
 function ngp_show_form($atts=null) {
 	global $ngpDonationFrontend;
-	$ngpDonationFrontend->show_form($atts);
+	return $ngpDonationFrontend->show_form($atts);
 }
