@@ -316,8 +316,42 @@ class NGPDonationFrontend {
 						unset($payment_data['ngp_add']);
 						unset($payment_data['FullName']);
 						unset($payment_data['_wp_http_referer']);
-						$payment_data['FirstName'] = $names[0];
-						$payment_data['LastName'] = $names[(count($names)-1)];
+						if(count($names)==2) {
+							$payment_data['FirstName'] = $names[0];
+							$payment_data['LastName'] = $names[1];
+						} else if(count($names)==1) {
+							$payment_data['LastName'] = $names[0];
+						} else if(count($names)==3) {
+							if(strstr($names[2], 'Sr') || strstr($names[2], 'Jr')) {
+								$payment_data['FirstName'] = $names[0];
+								$payment_data['LastName'] = $names[1];
+								$payment_data['Suffix'] = $names[2];
+							} else {
+								$payment_data['FirstName'] = $names[0];
+								$payment_data['MiddleName'] = $names[1];
+								$payment_data['LastName'] = $names[2];
+							}
+						} else if(count($names)==4) {
+							if((strstr($names[3], 'Sr') || strstr($names[3], 'Jr')) && (strstr($names[0], 'Mr') || strstr($names[0], 'Mrs') || strstr($names[0], 'Rev') || strstr($names[0], 'Ms') || strstr($names[0], 'Rep') || strstr($names[0], 'Dr'), strstr($names[0], 'Hon') || strstr($names[0], 'Prof'))) {
+								$payment_data['Prefix'] = $names[0];
+								$payment_data['FirstName'] = $names[1];
+								$payment_data['LastName'] = $names[2];
+								$payment_data['Suffix'] = $names[3];
+							} else {
+								$payment_data['FirstName'] = $names[0].' '.$names[1];
+								$payment_data['LastName'] = $names[2].' '.$names[3];
+							}
+						} else {
+							$payment_data['FirstName'] = $names[0];
+							if(isset($names[1]))
+								$payment_data['LastName'] = $names[1];
+							if(isset($names[2]))
+								$payment_data['LastName'] .= ' '.$names[2];
+							if(isset($names[3]))
+								$payment_data['LastName'] .= ' '.$names[3];
+							if(isset($names[4]))
+								$payment_data['LastName'] .= ' '.$names[4];
+						}
 						
 						if((isset($_POST['City']) && empty($_POST['City'])) || (isset($_POST['State']) && empty($_POST['State']))) {
 							$result = wp_remote_get('http://zip.elevenbasetwo.com/'.$_POST['Zip']);
