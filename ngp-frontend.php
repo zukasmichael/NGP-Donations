@@ -347,7 +347,7 @@ class NGPDonationFrontend {
 						unset($payment_data['_wp_http_referer']);
 						
 						array_walk($names, function(&$value) {
-							$chars = "\t\n\r\0\x0B,.[]{};:"\'';
+							$chars = "\t\n\r\0\x0B,.[]{};:\"'\x00..\x1F";
 							$value = trim($value, $chars);
 						});
 						if(count($names)==1) {
@@ -355,36 +355,66 @@ class NGPDonationFrontend {
 						} else if(count($names)==2) {
 							$payment_data['FirstName'] = $names[0];
 							$payment_data['LastName'] = $names[1];
-						} else if(count($names)==3) {
-							if(strstr($names[2], 'Sr') || strstr($names[2], 'Jr')) {
+						} else if(count($names)>2) {
+							// Check for Prefix
+							array_walk($namePrefixes, function($value, $key, &$the_names) {
+								if(strlen($the_names[0])==strlen($value) && stripos($the_names[0], $value)!==false && isset($the_names[0])) {
+									$the_names['prefix'] = $value;
+									unset($the_names[0]);
+								}
+							}, &$names);
+							
+							// Check for Suffix
+							array_walk($nameSuffixes, function($value, $key, &$the_names) {
+								$possible_suffix = null;
+								foreach($the_names as $k => $v) {
+									if(is_int($k)) {
+										$possible_skey = $k;
+										$possible_suffix = $v;
+									}
+								}
+								if(strlen($possible_suffix)==strlen($key) && stripos($possible_suffix, $key)!==false) {
+									$the_names['suffix'] = $value;
+									unset($the_names[$possible_skey]);
+								}
+							}, &$names);
+							
+							// Whatever is left over, set as FirstName, MiddleName, LastName
+							if(isset($names['prefix'])) {
+								$payment_data['Prefix'] = $names['prefix'];
+								unset($names['prefix']);
+							}
+							if(isset($names['suffix'])) {
+								$payment_data['Suffix'] = $names['suffix'];
+								unset($names['suffix']);
+							}
+							$names = array_merge($names);
+							if(count($names)==1) {
+								$payment_data['LastName'] = $names[0];
+							} else if(count($names)==2) {
 								$payment_data['FirstName'] = $names[0];
 								$payment_data['LastName'] = $names[1];
-								$payment_data['Suffix'] = $names[2];
-							} else {
+							} else if(count($names)==3) {
 								$payment_data['FirstName'] = $names[0];
 								$payment_data['MiddleName'] = $names[1];
 								$payment_data['LastName'] = $names[2];
-							}
-						} else if(count($names)==4) {
-							if((strstr($names[3], 'Sr') || strstr($names[3], 'Jr')) && (strstr($names[0], 'Mr') || strstr($names[0], 'Mrs') || strstr($names[0], 'Rev') || strstr($names[0], 'Ms') || strstr($names[0], 'Rep') || strstr($names[0], 'Dr') || strstr($names[0], 'Hon') || strstr($names[0], 'Prof'))) {
-								$payment_data['Prefix'] = $names[0];
-								$payment_data['FirstName'] = $names[1];
-								$payment_data['LastName'] = $names[2];
-								$payment_data['Suffix'] = $names[3];
+							} else if(count($names)==4) {
+								$payment_data['FirstName'] = $names[0];
+								$payment_data['MiddleName'] = $names[1];
+								$payment_data['MiddleName'] .= ' '.$names[2];
+								$payment_data['LastName'] = $names[3];
 							} else {
-								$payment_data['FirstName'] = $names[0].' '.$names[1];
-								$payment_data['LastName'] = $names[2].' '.$names[3];
+								// Otherwise, let's bail out but save everything
+								$payment_data['FirstName'] = $names[0];
+								if(isset($names[1]))
+									$payment_data['LastName'] = $names[1];
+								if(isset($names[2]))
+									$payment_data['LastName'] .= ' '.$names[2];
+								if(isset($names[3]))
+									$payment_data['LastName'] .= ' '.$names[3];
+								if(isset($names[4]))
+									$payment_data['LastName'] .= ' '.$names[4];
 							}
-						} else {
-							$payment_data['FirstName'] = $names[0];
-							if(isset($names[1]))
-								$payment_data['LastName'] = $names[1];
-							if(isset($names[2]))
-								$payment_data['LastName'] .= ' '.$names[2];
-							if(isset($names[3]))
-								$payment_data['LastName'] .= ' '.$names[3];
-							if(isset($names[4]))
-								$payment_data['LastName'] .= ' '.$names[4];
 						}
 						
 						if((isset($_POST['City']) && empty($_POST['City'])) || (isset($_POST['State']) && empty($_POST['State']))) {
