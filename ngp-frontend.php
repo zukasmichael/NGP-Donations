@@ -417,14 +417,6 @@ class NGPDonationFrontend {
 										}
 									}
 								}
-								if(isset($names[1]))
-									$payment_data['LastName'] = $names[1];
-								if(isset($names[2]))
-									$payment_data['LastName'] .= ' '.$names[2];
-								if(isset($names[3]))
-									$payment_data['LastName'] .= ' '.$names[3];
-								if(isset($names[4]))
-									$payment_data['LastName'] .= ' '.$names[4];
 							}
 						}
 						
