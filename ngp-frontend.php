@@ -406,6 +406,17 @@ class NGPDonationFrontend {
 							} else {
 								// Otherwise, let's bail out but save everything
 								$payment_data['FirstName'] = $names[0];
+								foreach($names as $namekey => $name) {
+									if($namekey==0) {
+										$payment_data['FirstName'] = $name;
+									} else {
+										if(!isset($payment_data['LastName'])) {
+											$payment_data['LastName'] = $name;
+										} else {
+											$payment_data['LastName'] .= ' '.$name;
+										}
+									}
+								}
 								if(isset($names[1]))
 									$payment_data['LastName'] = $names[1];
 								if(isset($names[2]))
