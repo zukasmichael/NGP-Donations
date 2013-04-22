@@ -277,6 +277,13 @@ class NGPDonationFrontend {
 		return true;
 	}
 	
+	function trim_value(&$value, $chars=null) {
+		if($chars)
+			$value = trim($value, $chars);
+		else
+			$value = trim($value);
+	}
+	
 	/* Submits and reroutes donation form */
 	function process_form() {
 		global $wpdb, $ngp;
@@ -308,6 +315,28 @@ class NGPDonationFrontend {
 				
 				if(!$this->any_errors) {
 					// Split Name
+					$namePrefixes = array('Dr', 'Hon', 'Mr', 'Mrs', 'Ms', 'Prof', 'Rep', 'Rev');
+					$nameSuffixes = array(
+						'Jr'		=>	'Jr',
+						'Junior'	=>	'Jr',
+						'Senior'	=>	'Sr',
+						'Sr'		=>	'Sr',
+						'I'			=>	'I',
+						'i'			=>	'I',
+						'ii'		=>	'II',
+						'II'		=>	'II',
+						'iii'		=>	'III',
+						'III'		=>	'III',
+						'iv'		=>	'IV',
+						'IV'		=>	'IV',
+						'v'			=>	'V',
+						'V'			=>	'V',
+						'VI'		=>	'VI',
+						'vii'		=>	'VII',
+						'VII'		=>	'VII',
+						'viii'		=>	'VIII',
+						'VIII'		=>	'VIII'
+					);
 					$payment_data = $_POST;
 					if(isset($_POST['FullName']) && !empty($_POST['FullName'])) {
 						$names = explode(' ', $_POST['FullName']);
@@ -316,11 +345,16 @@ class NGPDonationFrontend {
 						unset($payment_data['ngp_add']);
 						unset($payment_data['FullName']);
 						unset($payment_data['_wp_http_referer']);
-						if(count($names)==2) {
+						
+						array_walk($names, function(&$value) {
+							$chars = "\t\n\r\0\x0B,.[]{};:"\'';
+							$value = trim($value, $chars);
+						});
+						if(count($names)==1) {
+							$payment_data['LastName'] = $names[0];
+						} else if(count($names)==2) {
 							$payment_data['FirstName'] = $names[0];
 							$payment_data['LastName'] = $names[1];
-						} else if(count($names)==1) {
-							$payment_data['LastName'] = $names[0];
 						} else if(count($names)==3) {
 							if(strstr($names[2], 'Sr') || strstr($names[2], 'Jr')) {
 								$payment_data['FirstName'] = $names[0];
@@ -332,7 +366,7 @@ class NGPDonationFrontend {
 								$payment_data['LastName'] = $names[2];
 							}
 						} else if(count($names)==4) {
-							if((strstr($names[3], 'Sr') || strstr($names[3], 'Jr')) && (strstr($names[0], 'Mr') || strstr($names[0], 'Mrs') || strstr($names[0], 'Rev') || strstr($names[0], 'Ms') || strstr($names[0], 'Rep') || strstr($names[0], 'Dr'), strstr($names[0], 'Hon') || strstr($names[0], 'Prof'))) {
+							if((strstr($names[3], 'Sr') || strstr($names[3], 'Jr')) && (strstr($names[0], 'Mr') || strstr($names[0], 'Mrs') || strstr($names[0], 'Rev') || strstr($names[0], 'Ms') || strstr($names[0], 'Rep') || strstr($names[0], 'Dr') || strstr($names[0], 'Hon') || strstr($names[0], 'Prof'))) {
 								$payment_data['Prefix'] = $names[0];
 								$payment_data['FirstName'] = $names[1];
 								$payment_data['LastName'] = $names[2];

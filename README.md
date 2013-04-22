@@ -12,6 +12,19 @@ Go to `Settings -> General` and fill out the "NGP API Key", "Donation Support Ph
 
 "Addt'l Information for Donation Footer" might be used for listing things like donation mailing address, donation limits, taxable status of donations, etc.
 
+#### NGP Configuration
+
+Ensure that you have the following suffixes configured in NGP for your constituents/donors w/out the period.
+
+* Dr
+* Hon
+* Mr
+* Mrs
+* Ms
+* Prof
+* Rep
+* Rev
+
 ### Donation Usage
 
 Place this short tag on the appropriate page or article:
