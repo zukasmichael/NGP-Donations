@@ -381,7 +381,10 @@ class NGPDonationFrontend {
 							
 							// Whatever is left over, set as FirstName, MiddleName, LastName
 							if(isset($names['prefix'])) {
-								$payment_data['Prefix'] = $names['prefix'];
+								if($names['prefix']=='Rep')
+									$payment_data['Prefix'] = $names['prefix'];
+								else
+									$payment_data['Prefix'] = $names['prefix'].'.';
 								unset($names['prefix']);
 							}
 							if(isset($names['suffix'])) {
