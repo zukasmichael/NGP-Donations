@@ -88,6 +88,13 @@ function ngp_admin_init() {
 		'ngp_footer_info',
 		'general'
 	);
+	register_setting('general', 'ngp_show_volunteer', 'esc_attr');
+	add_settings_field(
+		'ngp_show_volunteer',
+		'<label for="ngp_show_volunteer">'.__('Show Volunteer Form' , 'ngp_show_volunteer' ).'</label>',
+		'ngp_show_volunteer',
+		'general'
+	);
 	// add_action('wp_head', 'ngp_head');
 	// add_action('admin_head', 'ngp_head');
 }
@@ -118,6 +125,14 @@ function ngp_accept_amex() {
 		echo '<input type="checkbox" id="ngp_accept_amex" name="ngp_accept_amex" checked="checked" />';
 	else
 		echo '<input type="checkbox" id="ngp_accept_amex" name="ngp_accept_amex" />';
+}
+
+function ngp_show_volunteer() {
+	$value = get_option('ngp_show_volunteer', '');
+	if($value=='on')
+		echo '<input type="checkbox" id="ngp_show_volunteer" name="ngp_show_volunteer" checked="checked" />';
+	else
+		echo '<input type="checkbox" id="ngp_show_volunteer" name="ngp_show_volunteer" />';
 }
 
 function ngp_footer_info() {
