@@ -44,60 +44,58 @@ class NGPVolunteerFrontend {
 		// $this->redirect_url = $res[0]->redirect_url;
 		$this->redirect_url = get_option('ngp_volunteer_thanks_url', '/thank-you-for-volunteering');
 		
-		$this->fieldsets = array(
-			'Contact Information' => array(
-				array(
-					'type' => 'text',
-					'slug' => 'FullName',
-					'required' => 'true',
-					'label' => 'Name',
-				),
-				array(
-					'type' => 'text',
-					'slug' => 'Email',
-					'required' => 'false',
-					'label' => 'Email Address'
-				),
-				array(
-					'type' => 'text',
-					'slug' => 'HomePhone',
-					'required' => 'false',
-					'label' => 'Phone'
-				),
-                // array(
-                //     'type' => 'text',
-                //     'slug' => 'Address1',
-                //     'required' => 'true',
-                //     'label' => 'Street Address'
-                // ),
-				// array(
-				// 	'type' => 'text',
-				// 	'slug' => 'Address2',
-				// 	'required' => 'false',
-				// 	'label' => 'Address (Cont.)'
-				// 	'show_label' => 'false'
-				// ),
-				array(
-					'type' => 'hidden',
-					'slug' => 'City',
-					// 'required' => 'true',
-					// 'label' => 'City'
-				),
-				array(
-					'type' => 'hidden',
-					'slug' => 'State',
-					// 'required' => 'true',
-					// 'label' => 'State',
-					// 'options' => array('AK'=>'AK','AL'=>'AL','AR'=>'AR','AZ'=>'AZ','CA'=>'CA','CO'=>'CO','CT'=>'CT','DC'=>'DC','DE'=>'DE','FL'=>'FL','GA'=>'GA','HI'=>'HI','IA'=>'IA','ID'=>'ID','IL'=>'IL','IN'=>'IN','KS'=>'KS','KY'=>'KY','LA'=>'LA','MA'=>'MA','MD'=>'MD','ME'=>'ME','MI'=>'MI','MN'=>'MN','MO'=>'MO','MS'=>'MS','MT'=>'MT','NC'=>'NC','ND'=>'ND','NE'=>'NE','NH'=>'NH','NJ'=>'NJ','NM'=>'NM','NV'=>'NV','NY'=>'NY','OH'=>'OH','OK'=>'OK','OR'=>'OR','PA'=>'PA','RI'=>'RI','SC'=>'SC','SD'=>'SD','TN'=>'TN','TX'=>'TX','UT'=>'UT','VA'=>'VA','VT'=>'VT','WA'=>'WA','WI'=>'WI','WV'=>'WV','WY'=>'WY')
-				),
-				array(
-					'type' => 'text',
-					'slug' => 'Zip',
-					'required' => 'true',
-					'label' => 'Zip Code'
-				),
+		$this->fields = array(
+			array(
+				'type' => 'text',
+				'slug' => 'FullName',
+				'required' => 'true',
+				'label' => 'Name',
 			),
-		)
+			array(
+				'type' => 'text',
+				'slug' => 'Email',
+				'required' => 'false',
+				'label' => 'Email Address'
+			),
+			array(
+				'type' => 'text',
+				'slug' => 'HomePhone',
+				'required' => 'false',
+				'label' => 'Phone'
+			),
+            // array(
+            //     'type' => 'text',
+            //     'slug' => 'Address1',
+            //     'required' => 'true',
+            //     'label' => 'Street Address'
+            // ),
+			// array(
+			// 	'type' => 'text',
+			// 	'slug' => 'Address2',
+			// 	'required' => 'false',
+			// 	'label' => 'Address (Cont.)'
+			// 	'show_label' => 'false'
+			// ),
+			array(
+				'type' => 'hidden',
+				'slug' => 'City',
+				// 'required' => 'true',
+				// 'label' => 'City'
+			),
+			array(
+				'type' => 'hidden',
+				'slug' => 'State',
+				// 'required' => 'true',
+				// 'label' => 'State',
+				// 'options' => array('AK'=>'AK','AL'=>'AL','AR'=>'AR','AZ'=>'AZ','CA'=>'CA','CO'=>'CO','CT'=>'CT','DC'=>'DC','DE'=>'DE','FL'=>'FL','GA'=>'GA','HI'=>'HI','IA'=>'IA','ID'=>'ID','IL'=>'IL','IN'=>'IN','KS'=>'KS','KY'=>'KY','LA'=>'LA','MA'=>'MA','MD'=>'MD','ME'=>'ME','MI'=>'MI','MN'=>'MN','MO'=>'MO','MS'=>'MS','MT'=>'MT','NC'=>'NC','ND'=>'ND','NE'=>'NE','NH'=>'NH','NJ'=>'NJ','NM'=>'NM','NV'=>'NV','NY'=>'NY','OH'=>'OH','OK'=>'OK','OR'=>'OR','PA'=>'PA','RI'=>'RI','SC'=>'SC','SD'=>'SD','TN'=>'TN','TX'=>'TX','UT'=>'UT','VA'=>'VA','VT'=>'VT','WA'=>'WA','WI'=>'WI','WV'=>'WV','WY'=>'WY')
+			),
+			array(
+				'type' => 'text',
+				'slug' => 'Zip',
+				'required' => 'true',
+				'label' => 'Zip Code'
+			),
+		);
 	}
 	
 	/*
@@ -122,12 +120,6 @@ class NGPVolunteerFrontend {
 	function process_form() {
 		global $wpdb, $ngp;
 		if($this->been_processed) { return false; exit(); }
-		
-		$check_security = $this->check_security();
-		if($check_security!==true) {
-			return false;
-			exit();
-		}
 	
 		if(!empty($_POST)) {
 			if(wp_verify_nonce($_POST['ngp_volunteer'], 'ngp_nonce_field')) // && $_POST['ngp_form_id']==$id
@@ -197,10 +189,6 @@ class NGPVolunteerFrontend {
 		global $wpdb, $ngp;
 		
 		extract( shortcode_atts( array(
-			'source' => null,
-			'fields' => null,
-			'main_code' => null,
-			'campaign_id' => null,
 			'thanks_url' => null
 		), $atts ) );
 		

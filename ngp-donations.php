@@ -28,6 +28,7 @@ include_once(dirname(__FILE__).'/NgpDonation.php');
 // include_once(dirname(__FILE__).'/ngp-setup.php');
 // include_once(dirname(__FILE__).'/ngp-functions.php');
 include_once(dirname(__FILE__).'/ngp-frontend.php');
+include_once(dirname(__FILE__).'/ngp-volunteer-frontend.php');
 
 if(strpos($_SERVER['REQUEST_URI'], 'ngp-donations/admin')!==false) {
 	include_once(dirname(__FILE__).'/ngp-manage.php');
