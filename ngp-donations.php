@@ -3,13 +3,13 @@
 	Plugin Name: NGP Donations
 	Plugin URI: http://revolutionmessaging.com/code/ngp-donations/
 	Description: Integrate NGP donation forms with your site
-	Version: 0.2.8
+	Version: 0.3
 	Author: Revolution Messaging
 	Author URI: http://revolutionmessaging.com
 	Tags: NGP, NGPVAN, Voter Action Network, donations, FEC, politics, fundraising
 	License: MIT
 	
-	Copyright 2011 Revolution Messaging LLC (email: support@revolutionmessaging.com)
+	Copyright 2013 Revolution Messaging LLC (email: support@revolutionmessaging.com)
 	
 	Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
 	
@@ -21,7 +21,7 @@
 $GLOBALS['ngp'] = (object) array(
 	// 'forms' => $GLOBALS['wpdb']->prefix . 'ngp_forms',
 	// 'database_version' => '0.1',
-	'version' => '0.2.8'
+	'version' => '0.3'
 );
 
 include_once(dirname(__FILE__).'/NgpDonation.php');
