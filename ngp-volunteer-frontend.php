@@ -60,10 +60,16 @@ class NGPVolunteerFrontend {
 				),
 				array(
 					'type' => 'text',
-					'slug' => 'Address1',
-					'required' => 'true',
-					'label' => 'Street Address'
+					'slug' => 'HomePhone',
+					'required' => 'false',
+					'label' => 'Phone'
 				),
+                // array(
+                //     'type' => 'text',
+                //     'slug' => 'Address1',
+                //     'required' => 'true',
+                //     'label' => 'Street Address'
+                // ),
 				// array(
 				// 	'type' => 'text',
 				// 	'slug' => 'Address2',
@@ -453,7 +459,7 @@ class NGPVolunteerFrontend {
 			}
 			echo '.</div>';
 		} else if($this->ngp_error) {
-			echo '<div class="errMsg ngp_alert">Sorry, but your volunteer request could not be processed. Please try again';
+			echo '<div class="errMsg ngp_alert">Sorry, but your submission to volunteer could not be processed. Please try again';
 			if(!empty($this->support_phone)) {
 				echo ' or call '.$this->support_phone;
 			}

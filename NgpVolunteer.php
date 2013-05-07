@@ -1,10 +1,10 @@
 <?php
 /**
- * NGP Donation
+ * NGP Volunteer, based on NgpDonations by New Media Campaigns
  *
- * @author      Josh Lockhart <josh@newmediacampaigns.com>
- * @copyright   2012 New Media Campaigns
- * @link        http://www.newmediacampaigns.com
+ * @author      Walker Hamilton <walker@revolutionmessaging.com>
+ * @copyright   2013 Revolution Messaging, LLC
+ * @link        http://www.revolutionmessaging.com
  * @version     1.0.0
  *
  * MIT LICENSE
@@ -31,21 +31,16 @@
  * USAGE:
  *
  * The first argument is your NGP credentials string. The second
- * argument is a boolean value that determines if the volunteer
+ * argument is a boolean value that determines if the contributor
  * should be notified by email after his contribution is accepted.
- * The final argument is a key value array of volunteer, Contribution,
+ * The final argument is a key value array of Contributor, Contribution,
  * and Payment details. See the array below for valid keys.
  *
- * $d = new NgpDonation('credentials-string', false, array(
+ * $d = new NgpVolunteer('credentials-string', false, array(
  *     'LastName' => 'Doe',
  *     'FirstName' => 'John',
- *     'Address1' => '100 Elm Street',
+ *     'Phone' => '123-123-1234',
  *     'Zip' => '27514',
- *     'Cycle' => 2012,
- *     'Amount' => 10,
- *     'CreditCardNumber' => '4111111111111111',
- *     'ExpYear' => '13',
- *     'ExpMonth' => '02'
  * ));
  * if ( $d->save() ) {
  *     //Success
@@ -61,14 +56,14 @@
  *     }
  * }
  */
-class NgpDonation {
+class NgpVolunteer {
     /**
      * @var string Provided by NGP
      */
     protected $credentials;
 
     /**
-     * @var string Send email to volunteer after donation accepted?
+     * @var string Send email to contributor after donation accepted?
      */
     protected $sendEmail;
 
@@ -80,17 +75,12 @@ class NgpDonation {
     /**
      * @var array[String] Case sensitive!
      */
+    protected $constituentFields;
+
+    /**
+     * @var array[String] Case sensitive!
+     */
     protected $volunteerFields;
-
-    /**
-     * @var array[String] Case sensitive!
-     */
-    protected $contributionFields;
-
-    /**
-     * @var array[String] Case sensitive!
-     */
-    protected $paymentFields;
 
     /**
      * @var array[String] Case sensitive!
@@ -121,15 +111,15 @@ class NgpDonation {
      * Constructor
      *
      * @param   string  $credentials    Your NGP encrypted credentials string
-     * @param   bool    $sendEmail      Notify volunteer after donation accepted?
+     * @param   bool    $sendEmail      Notify contributor after donation accepted?
      * @param   array   $data           Key-value array of field names and values
      * @return  void
-    */
+     */
     public function __construct( $credentials, $sendEmail = false, $data = array() ) {
         $this->client = new SoapClient('http://services.myngp.com/ngpservices/VolunteerSignUpService.asmx?wsdl');
         $this->credentials = $credentials;
         $this->sendEmail = $sendEmail;
-        $this->volunteerFields = array(
+        $this->constituentFields = array(
             'LastName' => '', //REQUIRED
             'FirstName' => '', //REQUIRED
             'MiddleName' => '',
@@ -150,124 +140,166 @@ class NgpDonation {
             'Employer' => '',
             'Occupation' => '',
             'OptIn' => true, //bool
-            'MainType' => 'I',
-            'Organization' => '',
         );
         $this->volunteerFields = array(
-			'Code' => 'AA',
-			'note' => '',
+            'Code' => 'WEBSITE',
+            'note' => 'Wants to volunteer.',
         );
-        $this->volunteerFields = array(
-			'Code' => 'BB',
-			'note' => '',
+        $this->allFields = array_merge(
+            $this->constituentFields,
+            $this->volunteerFields,
+            $data
         );
+        $this->requiredFields = array(
+            'FirstName',
+            'LastName',
+            'Zip',
+            'Phone',
+            'Email'
+        );
+    }
 
-	    /**
-	     * Set required fields
-	     * @param array[String] Case sensitive numeric array of field names
-	     * @return void
-	     */
-	    public function setRequiredFields( $fields ) {
-	        $this->requiredFields = $fields;
-	    }
+    /**
+     * Set required fields
+     * @param array[String] Case sensitive numeric array of field names
+     * @return void
+     */
+    public function setRequiredFields( $fields ) {
+        $this->requiredFields = $fields;
+    }
 
-	    /**
-	     * Add required fields
-	     * @param array[String] Case sensitive numeric array of field names
-	     * @return void
-	     */
-	    public function addRequiredFields( $fields ) {
-	        $this->requiredFields = array_merge($this->requiredFields, $fields);
-	    }
+    /**
+     * Add required fields
+     * @param array[String] Case sensitive numeric array of field names
+     * @return void
+     */
+    public function addRequiredFields( $fields ) {
+        $this->requiredFields = array_merge($this->requiredFields, $fields);
+    }
 
-	    /**
-	     * Save email signup
-	     *
-	     * Returns (int)0 on success, (bool)false on failure. If this returns an integer other
-	     * than zero, inspect the transaction result with `getResult()`. If this returns false,
-	     * you should check for data errors with `getErrors()` or an API fault with `getFault()`.
-	     *
-	     * @return bool
-	    */
-	    public function save() {
-	        if ( $this->isValid() === false ) {
-	            return false;
-	        }
-	        $args = array(
-	            'RequestXML' => $this->generateXml(),
-	            'transType' => 'ContactSetICampaigns',
-	            'credentialString' => $this->credentialString
-	        );
-	        // WP_Http
-	        $headers = array(
-	            'User-agent': 'RevMsg Wordpress PLugin (support@revmsg.com)',
-	        );
-	        $result = $request->request('http://www.myngp.com/ngpapi/APIService.asmx/processRequestWithCreds', array(
-	            'method' => 'POST',
-	            'body' => $args,
-	            'headers' => $headers
-	        ));
-	        var_dump($result);
-	    }
-	    public function generateXml() {
-	        $xml = '<VolunteerSignUp>';
-	        $xml .= '<ContactInfo>';
-	        foreach ( $this->contributorFields as $name => $defaultValue ) {
-	            if ( is_bool($this->allFields[$name]) ) {
-	                $this->allFields[$name] = $this->allFields[$name] ? 'true' : 'false';
-	            }
-	            if ( !empty($this->allFields[$name]) ) {
-	                $xml .= sprintf('<%s>%s</%s>', $name, $this->allFields[$name], $name);
-	            } else {
-	                $xml .= sprintf('<%s/>', $name);
-	            }
-	        }
-	        $xml .= '</ContactInfo>';
+    /**
+     * Save email signup
+     *
+     * Returns (int)0 on success, (bool)false on failure. If this returns an integer other
+     * than zero, inspect the transaction result with `getResult()`. If this returns false,
+     * you should check for data errors with `getErrors()` or an API fault with `getFault()`.
+     *
+     * @return bool
+     */
+    public function save() {
+        if ( $this->isValid() === false ) {
+            return false;
+        }
+        $args = array(
+            'credentials' => $this->credentials,
+            'data' => $this->generateXml()
+        );
+        try {
+            $res = $this->client->PostVerisignTransaction($args);
+            $this->result = new SimpleXMLElement($res->VolunteerSignupResponse);
+            if($this->result->Message=='An unexpected error has occurred.') { return false; } else {
+                return (int)$this->result->VendorResult->Result === 0;
+            }
+        } catch ( SoapFault $e ) {
+            $this->fault = $e;
+            return false;
+        }
+    }
 
-	        $xml .= '<VolunteerInfo>';
-	        foreach ( $this->Code as $name => $defaultValue ) {
-	            if ( is_bool($this->allFields[$name]) ) {
-	                $this->allFields[$name] = $this->allFields[$name] ? 'true' : 'false';
-	            }
-	            if ( !empty($this->allFields[$name]) ) {
-	                $xml .= sprintf('<%s>%s</%s>', $name, $this->allFields[$name], $name);
-	            } else {
-	                $xml .= sprintf('<%s/>', $name);
-	            }
-	        }
-	        $xml .= '</VolunteerInfo>';
-	        $xml .= '</VolunteerSignUp>';
-	        return $xml;
-	    }
-	    /**
-	     * Get errors
-	     * return array[String]|null
-	     */
-	    public function getErrors() {
-	        return $this->errors;
-	    }
+    /**
+     * Get transaction result details
+     * @return SimpleXMLElement
+     */
+    public function getResult() {
+        return $this->result;
+    }
 
-	    /**
-	     * Has errors?
-	     * @return bool
-	     */
-	    public function hasErrors() {
-	        return !empty($this->errors);
-	    }
+    /**
+     * Is transaction data valid?
+     * @return bool
+     */
+    public function isValid() {
+        $this->errors = array();
+        
+        //Check requiredness
+        foreach( $this->requiredFields as $field ) {
+            if ( !isset($this->allFields[$field]) || empty($this->allFields[$field]) ) {
+                $this->errors[] = "$field is required";
+            }
+        }
+        
+        if ( (!isset($this->allFields['HomePhone']) || empty($this->allFields['HomePhone'])) &&  (!isset($this->allFields['Email']) || empty($this->allFields['Email']))) {
+            $this->errors[] = "A phone or email address is required";
+        }
+        
+        return empty($this->errors);
+    }
 
-	    /**
-	     * Get last fault
-	     * @return SoapFault|null
-	     */
-	    public function getFault() {
-	        return $this->fault;
-	    }
+    /**
+     * Generate XML payload
+     * @return string
+     */
+    public function generateXml() {
+        $xml = '<VolunteerSignUp>';
+        $xml .= '<ContactInfo>';
+        foreach ( $this->constituentFields as $name => $defaultValue ) {
+            if ( is_bool($this->allFields[$name]) ) {
+                $this->allFields[$name] = $this->allFields[$name] ? 'true' : 'false';
+            }
+            if ( !empty($this->allFields[$name]) ) {
+                $xml .= sprintf('<%s>%s</%s>', $name, $this->allFields[$name], $name);
+            } else {
+                $xml .= sprintf('<%s/>', $name);
+            }
+        }
+        $xml .= '</ContactInfo>';
 
-	    /**
-	     * Has fault?
-	     * @return bool
-	     */
-	    public function hasFault() {
-	        return !empty($this->fault);
-	    }
-?>
+        $xml .= '<VolunteerInfo>';
+        foreach ( $this->volunteerFields as $name => $defaultValue ) {
+            if ( is_bool($this->allFields[$name]) ) {
+                $this->allFields[$name] = $this->allFields[$name] ? 'true' : 'false';
+            }
+            if ( !empty($this->allFields[$name]) ) {
+                $xml .= sprintf('<%s>%s</%s>', $name, $this->allFields[$name], $name);
+            } else {
+                $xml .= sprintf('<%s/>', $name);
+            }
+        }
+        $xml .= '</VolunteerInfo>';
+        $xml .= '</VolunteerSignUp>';
+        return $xml;
+    }
+
+
+    /**
+     * Get errors
+     * return array[String]|null
+     */
+    public function getErrors() {
+        return $this->errors;
+    }
+
+    /**
+     * Has errors?
+     * @return bool
+     */
+    public function hasErrors() {
+        return !empty($this->errors);
+    }
+
+    /**
+     * Get last fault
+     * @return SoapFault|null
+     */
+    public function getFault() {
+        return $this->fault;
+    }
+
+    /**
+     * Has fault?
+     * @return bool
+     */
+    public function hasFault() {
+        return !empty($this->fault);
+    }
+}

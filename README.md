@@ -14,16 +14,20 @@ Go to `Settings -> General` and fill out the "NGP API Key", "Donation Support Ph
 
 #### NGP Configuration
 
-Ensure that you have the following suffixes configured in NGP for your constituents/donors w/out the period.
+Ensure that you have the following suffixes configured in NGP for your constituents/donors.
 
-* Dr
-* Hon
-* Mr
-* Mrs
-* Ms
-* Prof
-* Rep
-* Rev
+* Dr.
+* Hon.
+* Mr.
+* Mrs.
+* Ms.
+* Prof.
+* Rep.
+* Rev.
+
+Ensure that you have the following volunteer type configured in NGP for your constituents.
+
+* WEBSITE
 
 ### Donation Usage
 
@@ -75,3 +79,11 @@ The `main_code` has to be created ahead of time in NGP: [http://help.ngphost.com
 Steps 1-5 are all you need to do in order to make sure your code is saved in myNGP.com.
 
 The `thanks_url` property is optional and defaults to `/thank-you-for-signing-up`.
+
+### Volunteer Usage
+
+Place this short tag on the appropriate page or article:
+
+	[ngp_show_volunteer thanks_url="/thanks-for-volunteering"]
+
+The `thanks_url` property is optional and defaults to `/thank-you-for-volunteering`
